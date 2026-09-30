@@ -1,0 +1,6 @@
+value_band,min_usd,max_usd,required_approver_level,compliance_review_if_flags
+0,0,25000.0,1,hcp;gov;int
+1,25000,100000.0,1,hcp;gov;int
+2,100000,500000.0,2,hcp;gov;int
+3,500000,2000000.0,3,hcp;gov;int
+4,2000000,,3,hcp;gov;int

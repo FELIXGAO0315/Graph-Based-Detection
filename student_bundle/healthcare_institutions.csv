@@ -1,0 +1,214 @@
+institution_id,name,country,inst_type,public_sector
+HCO-DC10F074,East Justin General Hospital,US,hospital,False
+HCO-CE73E4A9,Aaronmouth Medical Clinic,US,clinic,False
+HCO-46D9EC69,Port Joseph General Hospital,US,hospital,False
+HCO-C58F35E5,South Justin General Hospital,US,hospital,True
+HCO-2243F022,South Melissa University Medical Center,US,academic_medical_center,False
+HCO-8CAC80CF,Jennifermouth Regional Health Authority,US,health_authority,True
+HCO-E285A41E,Harrisonside Patients Association,US,patient_organization,False
+HCO-39452B35,South Edwin General Hospital,US,hospital,True
+HCO-1EAC9AD0,West Reginaldchester General Hospital,US,hospital,False
+HCO-6DF4A1AD,Morenomouth General Hospital,US,hospital,True
+HCO-E6632944,West Brandonmouth General Hospital,US,hospital,False
+HCO-333F0EF7,Kevinchester General Hospital,US,hospital,False
+HCO-B133F866,Gillespieside University Medical Center,US,academic_medical_center,False
+HCO-D6D76563,Rachelhaven Medical Clinic,US,clinic,False
+HCO-F36E724F,Leemouth General Hospital,US,hospital,False
+HCO-E519C561,Blevinsville Patients Association,US,patient_organization,False
+HCO-A41761D1,New Howard Regional Health Authority,US,health_authority,True
+HCO-42A1CCC3,West Mark General Hospital,US,hospital,False
+HCO-3EDC8DE1,Jefferyside General Hospital,US,hospital,False
+HCO-6AD13254,East Andrew General Hospital,US,hospital,False
+HCO-84120701,Lake Elizabeth General Hospital,US,hospital,False
+HCO-97476A1D,South Patricia General Hospital,US,hospital,False
+HCO-836DD6A3,Jacobsontown General Hospital,US,hospital,False
+HCO-1600731B,Ashleybury Medical Clinic,US,clinic,False
+HCO-CC20E8C0,Joshuaberg General Hospital,US,hospital,False
+HCO-24D35453,Jonesshire General Hospital,US,hospital,True
+HCO-D4CDE433,Hancockburgh Medical Clinic,US,clinic,True
+HCO-F9C4E6E2,North Rachelberg General Hospital,US,hospital,False
+HCO-D9F2CD04,North Suzanneborough Medical Clinic,US,clinic,False
+HCO-EC6382BD,Ortizhaven Medical Clinic,US,clinic,False
+HCO-91D93485,Colleentown Medical Clinic,US,clinic,False
+HCO-1758772A,North Dawn Patients Association,US,patient_organization,False
+HCO-88340921,South Maryland General Hospital,US,hospital,False
+HCO-EAB506FB,Thomaschester General Hospital,US,hospital,False
+HCO-FCB9DE77,East Tyler Patients Association,US,patient_organization,False
+HCO-5E727E76,Lake Richardmouth Regional Health Authority,US,health_authority,True
+HCO-E7DCD376,North Nancyfort General Hospital,US,hospital,False
+HCO-C29DF56D,Foxchester General Hospital,US,hospital,True
+HCO-9CC765C8,Port Sarah Regional Health Authority,US,health_authority,True
+HCO-5A194232,New Raymond General Hospital,US,hospital,True
+HCO-7BEB3E57,Brittanychester General Hospital,CA,hospital,True
+HCO-22881D97,North Laurenton General Hospital,CA,hospital,False
+HCO-B156AF66,North Sarahfort General Hospital,CA,hospital,True
+HCO-1165C616,Jeremyside Medical Clinic,CA,clinic,True
+HCO-38BFCD71,East Rossside Regional Health Authority,GB,health_authority,True
+HCO-98624804,Dayside General Hospital,GB,hospital,True
+HCO-31D1C7B6,Ericshire General Hospital,GB,hospital,False
+HCO-590A4ECA,Margaretport General Hospital,GB,hospital,True
+HCO-A231B710,Elizabethburgh Patients Association,GB,patient_organization,False
+HCO-87A377DC,Bitterfeld General Hospital,DE,hospital,True
+HCO-2B7B2B01,Magdeburg Medical Clinic,DE,clinic,False
+HCO-7A835918,Recklinghausen Regional Health Authority,DE,health_authority,True
+HCO-D5BBC451,Amberg General Hospital,DE,hospital,True
+HCO-A165B2D7,Kleve University Medical Center,DE,academic_medical_center,True
+HCO-1C6C4C82,Kleve Medical Clinic,DE,clinic,True
+HCO-862FF2A9,Auger-sur-Faure General Hospital,FR,hospital,True
+HCO-138D761C,RobertBourg General Hospital,FR,hospital,True
+HCO-80068C0F,Martinboeuf Patients Association,FR,patient_organization,False
+HCO-673979A8,Carlier General Hospital,FR,hospital,True
+HCO-D02F7B5C,GrenierVille Patients Association,FR,patient_organization,False
+HCO-3559758E,Cesano General Hospital,IT,hospital,True
+HCO-F14F3196,Amelia University Medical Center,IT,academic_medical_center,True
+HCO-2A2870C4,Torre De' Passeri Medical Clinic,IT,clinic,True
+HCO-754A268A,Maragnole General Hospital,IT,hospital,False
+HCO-24C8444E,Cantabria University Medical Center,ES,academic_medical_center,True
+HCO-FE5DB873,Tarragona Patients Association,ES,patient_organization,False
+HCO-10EFB3A6,Alicante General Hospital,ES,hospital,True
+HCO-DC8442EA,La Rioja General Hospital,ES,hospital,True
+HCO-9437D0AD,Vosselare General Hospital,BE,hospital,False
+HCO-6AF65C33,Malvoisin Medical Clinic,BE,clinic,True
+HCO-A38FEB1B,Hoves General Hospital,BE,hospital,True
+HCO-41F3F056,Drouwenerveen Medical Clinic,NL,clinic,True
+HCO-AA95774F,Nieuwland Regional Health Authority,NL,health_authority,True
+HCO-AD5C02D7,La Tour-de-Peilz Medical Clinic,CH,clinic,True
+HCO-D9F2BC3B,Neuenburg Medical Clinic,CH,clinic,False
+HCO-117926BC,Anne-Marie Ville Medical Clinic,IE,clinic,True
+HCO-63F39FA7,Donna Ville General Hospital,IE,hospital,True
+HCO-A544830A,Laakirchen Patients Association,AT,patient_organization,False
+HCO-612015FC,Hainfeld Medical Clinic,AT,clinic,True
+HCO-41783C23,Linkoping General Hospital,SE,hospital,False
+HCO-8CC55D0B,Goteborg General Hospital,SE,hospital,True
+HCO-74A98809,Hobro Patients Association,DK,patient_organization,False
+HCO-1C8F5C88,Nimtofte General Hospital,DK,hospital,False
+HCO-1995C965,Marioy Medical Clinic,NO,clinic,False
+HCO-F9164213,Oyvindhamn University Medical Center,NO,academic_medical_center,True
+HCO-3356AB83,Tyrnava General Hospital,FI,hospital,False
+HCO-21838FDF,Brando General Hospital,FI,hospital,True
+HCO-AF37BDFD,Ostrow Mazowiecka General Hospital,PL,hospital,False
+HCO-8B78E5D1,Bydgoszcz Medical Clinic,PL,clinic,True
+HCO-7FC1AF2C,Ustek General Hospital,CZ,hospital,True
+HCO-15FDABCD,Chotebor Patients Association,CZ,patient_organization,False
+HCO-17B23EE4,Ligetkoros General Hospital,HU,hospital,True
+HCO-C3385C9A,Szolnok University Medical Center,HU,academic_medical_center,True
+HCO-5C9A89DA,Motru University Medical Center,RO,academic_medical_center,True
+HCO-680AA37D,Sovata General Hospital,RO,hospital,False
+HCO-EBE84DD1,Kilkis University Medical Center,GR,academic_medical_center,True
+HCO-83163B7D,Tripole Regional Health Authority,GR,health_authority,True
+HCO-E51EFC84,Mirandela General Hospital,PT,hospital,True
+HCO-9E746F36,Tarouca General Hospital,PT,hospital,False
+HCO-C7C33FDD,New Viliian General Hospital,BG,hospital,True
+HCO-806BB73B,Port Boleslavfurt University Medical Center,BG,academic_medical_center,True
+HCO-E0039CD9,Donja Stubica General Hospital,HR,hospital,True
+HCO-27D3D763,Dubrovnik Medical Clinic,HR,clinic,True
+HCO-1936DC2F,Krajne University Medical Center,SK,academic_medical_center,True
+HCO-57A63B93,Nova Bosaca Medical Clinic,SK,clinic,True
+HCO-28DCDF84,Cerknica Medical Clinic,SI,clinic,True
+HCO-8CCEA287,Zagorje ob Savi General Hospital,SI,hospital,True
+HCO-13E59F25,Voisin General Hospital,LU,hospital,False
+HCO-7A3595E3,Moulin-les-Bains University Medical Center,LU,academic_medical_center,True
+HCO-C91EC00E,Ermoupole Patients Association,CY,patient_organization,False
+HCO-C6680D92,Mesologgi General Hospital,CY,hospital,True
+HCO-CF9EBBD9,East Allantown Patients Association,MT,patient_organization,False
+HCO-9BCEE794,Mohammedton Medical Clinic,MT,clinic,True
+HCO-8CC6E361,Ban Qiao Qu Patients Association,JP,patient_organization,False
+HCO-37BBBE07,Ri Ye Shi Medical Clinic,JP,clinic,True
+HCO-DE45ABCE,Da Tian Qu Medical Clinic,JP,clinic,False
+HCO-54865695,Da Dao Ting University Medical Center,JP,academic_medical_center,True
+HCO-988AC109,Heng Bang Shi Shen Nai Chuan Qu University Medical Center,JP,academic_medical_center,True
+HCO-C1CD05DA,Heng Bang Shi He Jian Qu Medical Clinic,JP,clinic,True
+HCO-2108AF24,Chang Sha Shi General Hospital,CN,hospital,False
+HCO-5059A523,Xu Xian University Medical Center,CN,academic_medical_center,True
+HCO-C133B76C,Cheng Du Xian Medical Clinic,CN,clinic,True
+HCO-A04B5C76,Chang Chun Xian Patients Association,CN,patient_organization,False
+HCO-A0C7468C,Xi Zhu Xian Medical Clinic,CN,clinic,False
+HCO-BC17100D,Chao Zhou Xian Patients Association,CN,patient_organization,False
+HCO-DF2D51AE,hwaceongun University Medical Center,KR,academic_medical_center,False
+HCO-D987C117,gurisi University Medical Center,KR,academic_medical_center,True
+HCO-1825421C,North Oliviaside General Hospital,AU,hospital,True
+HCO-3400E65D,East Elizabeth General Hospital,AU,hospital,True
+HCO-1B769176,Thorntonmouth Patients Association,NZ,patient_organization,False
+HCO-DF59354F,Mikaylabury General Hospital,NZ,hospital,False
+HCO-114F00F7,Bangalore University Medical Center,IN,academic_medical_center,True
+HCO-4270B85A,Anantapuram Patients Association,IN,patient_organization,False
+HCO-8E0CA058,Mirzapur General Hospital,IN,hospital,True
+HCO-3E898DD3,East Michele Medical Clinic,SG,clinic,True
+HCO-4D5D2E10,East Danny General Hospital,SG,hospital,False
+HCO-4341E7D1,West Antoniotown Patients Association,MY,patient_organization,False
+HCO-CE5D7E3D,West Paulside General Hospital,MY,hospital,True
+HCO-56DBE0C8,`ublraachthaanii University Medical Center,TH,academic_medical_center,False
+HCO-28600DA0,nnthburii General Hospital,TH,hospital,False
+HCO-9920B679,Thi xa JaneThi xa General Hospital,VN,hospital,True
+HCO-604B7C64,Quan JaneXa Patients Association,VN,patient_organization,False
+HCO-4E1F37C3,Kota Administrasi Jakarta Pusat Patients Association,ID,patient_organization,False
+HCO-7CF2F3F1,Prabumulih Medical Clinic,ID,clinic,True
+HCO-F233E45B,Jeffrey Ville General Hospital,PH,hospital,True
+HCO-C5F971BE,Kent Ville General Hospital,PH,hospital,True
+HCO-2E542178,New Justinbury General Hospital,PK,hospital,False
+HCO-38118FB4,Joshualand General Hospital,PK,hospital,False
+HCO-659A48ED,San Zhong Xian General Hospital,TW,hospital,True
+HCO-EEAD221F,Tai Zhong University Medical Center,TW,academic_medical_center,True
+HCO-4D31A121,Tai Zhong Xian Medical Clinic,HK,clinic,True
+HCO-7A18854C,Peng Hu University Medical Center,HK,academic_medical_center,False
+HCO-5AAABA46,Ribeiro Medical Clinic,BR,clinic,True
+HCO-754EE25C,Cirino do Amparo Medical Clinic,BR,clinic,False
+HCO-23261C57,Pires Medical Clinic,BR,clinic,False
+HCO-87B128D0,San Hermelinda de la Montana General Hospital,MX,hospital,True
+HCO-935E7B2A,Vieja Ghana Patients Association,MX,patient_organization,False
+HCO-3D3E5BAC,Santiago del Estero Regional Health Authority,AR,health_authority,True
+HCO-812BF90C,Bahia Blanca Medical Clinic,AR,clinic,False
+HCO-1E559BC9,Rovira Medical Clinic,CO,clinic,True
+HCO-4A137A19,Sesquile Medical Clinic,CO,clinic,False
+HCO-35DC4921,Chanaral General Hospital,CL,hospital,False
+HCO-89FBC490,Diego de Almagro Medical Clinic,CL,clinic,True
+HCO-AE96DE8A,Avila General Hospital,PE,hospital,True
+HCO-CE51A842,Segovia University Medical Center,PE,academic_medical_center,True
+HCO-531167AF,Cantabria General Hospital,EC,hospital,True
+HCO-8E4D3732,Castellon General Hospital,EC,hospital,True
+HCO-EE82E5C2,Girona Patients Association,VE,patient_organization,False
+HCO-E86610D1,Valladolid Medical Clinic,VE,clinic,True
+HCO-BF50EF1E,Huesca General Hospital,GT,hospital,True
+HCO-C1489008,Tarragona Patients Association,GT,patient_organization,False
+HCO-837A0797,Lleida University Medical Center,DO,academic_medical_center,True
+HCO-661E2CFB,Segovia Regional Health Authority,DO,health_authority,True
+HCO-D4EE661E,Malaga University Medical Center,PA,academic_medical_center,False
+HCO-AE00BD2C,Segovia General Hospital,PA,hospital,True
+HCO-7D9EE0BD,Sevilla University Medical Center,CR,academic_medical_center,True
+HCO-6A239C60,La Rioja University Medical Center,CR,academic_medical_center,True
+HCO-9DE4A9F0,shhmmouth General Hospital,SA,hospital,False
+HCO-48194B01,North tqyW ldWyn Medical Clinic,SA,clinic,True
+HCO-85CE50CE,Stuartberg Medical Clinic,AE,clinic,True
+HCO-1D5DE5B6,Virginiamouth Medical Clinic,AE,clinic,True
+HCO-B7924C41,Port Nathanmouth Patients Association,EG,patient_organization,False
+HCO-8433C969,North Rhonda University Medical Center,EG,academic_medical_center,True
+HCO-A2A8B126,South Adasal Regional Health Authority,TR,health_authority,True
+HCO-B3FDD875,South Ekmel Patients Association,TR,patient_organization,False
+HCO-B660DAC8,AbyHyl Medical Clinic,IL,clinic,True
+HCO-71803070,lvzyt Regional Health Authority,IL,health_authority,True
+HCO-E47FDEB6,North Michael Medical Clinic,ZA,clinic,True
+HCO-574D1331,New Nicoleland Medical Clinic,ZA,clinic,True
+HCO-203F3061,Lake Dianaberg Medical Clinic,NG,clinic,True
+HCO-99D0916F,New Brandon General Hospital,NG,hospital,True
+HCO-7C8CA077,Lisatown Patients Association,KE,patient_organization,False
+HCO-8CBDB67A,East Juliantown General Hospital,KE,hospital,False
+HCO-D287A93D,Blot General Hospital,MA,hospital,False
+HCO-A14EF7C8,Barthelemy Medical Clinic,MA,clinic,False
+HCO-1EFA7597,Sainte Nicole-les-Bains General Hospital,DZ,hospital,True
+HCO-FB84CC17,Saint Josephnec General Hospital,DZ,hospital,False
+HCO-7BBDA442,lHwyTtbury General Hospital,KW,hospital,False
+HCO-C2EEB3AD,l`wlqburgh General Hospital,KW,hospital,False
+HCO-50F15BD7,New hdyside General Hospital,QA,hospital,False
+HCO-BA6FB2CE,East bthjside General Hospital,QA,hospital,True
+HCO-DFD4DFFB,East Kylie General Hospital,JO,hospital,False
+HCO-C4205770,South Sharon General Hospital,JO,hospital,True
+HCO-EDD2C330,`Tbury Medical Clinic,LB,clinic,False
+HCO-5CA590C5,drynside General Hospital,LB,hospital,False
+HCO-FB433B9D,g. Kachkanar General Hospital,RU,hospital,False
+HCO-48021FC9,g. Pavlovskaia General Hospital,RU,hospital,True
+HCO-AA055DD4,khutir Monastiris'ka General Hospital,UA,hospital,False
+HCO-93CFFDB0,selo Kup'ians'k General Hospital,UA,hospital,True
+HCO-D2145544,klkh Zhukovskii Medical Clinic,KZ,clinic,False
+HCO-937A0935,klkh Nepliuevka Medical Clinic,KZ,clinic,True
+HCO-76C605FB,k. Serebrianye Prudy General Hospital,BY,hospital,True
+HCO-64F5E577,p. Smolensk General Hospital,BY,hospital,False

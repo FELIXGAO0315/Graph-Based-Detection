@@ -1,0 +1,3 @@
+case_rank,member_record_ids,typology_tags,score,reason_codes
+1,TP-EXAMPLE1|TP-EXAMPLE2,SHARED_ADDRESS|SPONSOR_CONCENTRATION,0.93,"3 vendors at one rare address; sponsor portfolio 4x peer median"
+2,TP-EXAMPLE3,COMMON_BENEFICIAL_OWNER,0.81,"two vendors converge on one owner via a holdco"
