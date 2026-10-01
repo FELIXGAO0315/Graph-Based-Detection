@@ -1,0 +1,20 @@
+| split | relation | mean | std |
+|---|---|---|---|
+| test | approved_by | 0.937 | 0.008 |
+| test | has_contact | 0.967 | 0.026 |
+| test | linked_to | 0.878 | 0.064 |
+| test | located_at | 0.971 | 0.008 |
+| test | owned_by | 0.800 | 0.075 |
+| test | owned_by_person | 0.947 | 0.038 |
+| test | provides | 0.926 | 0.008 |
+| test | registered_as | 0.899 | 0.047 |
+| test | sponsored_by | 0.871 | 0.019 |
+| val | approved_by | 0.945 | 0.007 |
+| val | has_contact | 0.941 | 0.042 |
+| val | linked_to | 0.865 | 0.071 |
+| val | located_at | 0.943 | 0.030 |
+| val | owned_by | 0.808 | 0.092 |
+| val | owned_by_person | 0.916 | 0.066 |
+| val | provides | 0.900 | 0.023 |
+| val | registered_as | 0.867 | 0.065 |
+| val | sponsored_by | 0.864 | 0.011 |

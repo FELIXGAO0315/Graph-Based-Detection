@@ -1,0 +1,7 @@
+,AP,AP,R@50,R@50,R@100,R@100,macro_tag_recall,macro_tag_recall,mean_iou,mean_iou,coverage,coverage
+,mean,std,mean,std,mean,std,mean,std,mean,std,mean,std
+perturbation,,,,,,,,,,,,
+address typo 10%,0.906,0.011,1.0,0.0,1.0,0.0,1.0,0.0,0.906,0.01,1.0,0.0
+address typo 20%,0.91,0.015,1.0,0.0,1.0,0.0,1.0,0.0,0.903,0.004,1.0,0.0
+drop 10% of name-based registry matches,0.851,0.04,0.949,0.035,0.949,0.035,0.961,0.028,0.901,0.014,0.97,0.03
+drop 20% of name-based registry matches,0.856,0.046,0.939,0.03,0.949,0.035,0.961,0.028,0.891,0.012,0.97,0.03
