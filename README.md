@@ -24,6 +24,8 @@ meridian-exp all                           # all experiments -> reports/experime
 Each run writes to `artifacts/runs/<timestamp>/` (or `--out <dir>`):
 - `submission.csv` in the template format, and `ranked_cases.csv` with extra columns;
 - `cases/`: analyst case packages for the top 10 cases (`--packages N` to change);
+- `graph/`: the canonical heterogeneous graph behind the run (`nodes.parquet`, `edges.parquet`) and
+  `graph.json` with its content hash and counts;
 - `cases.jsonl` (evidence per case), `checks.md` (data checks) and the entity-resolution lists;
 - `run.json`: config, input hashes, versions and local scores.
 
@@ -41,6 +43,7 @@ src/meridian/
   checks.py                  data checks (contract, keys, dates, Dossier Appendix B tests)
   resolution.py              normalisation, registry matching, duplicate records
   context.py                 per-time-point views shared by detectors (entities, categories, ownership paths)
+  graph.py                   canonical heterogeneous graph: typed node and edge tables, content hash
   detectors/                 one module per family of typologies, policy.py, open_set.py, record.py
   cases.py                   merging candidates into cases, emergence and active periods
   ranking.py                 calibration, type interleaving, tag selection, submission table

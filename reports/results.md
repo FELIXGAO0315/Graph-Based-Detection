@@ -17,6 +17,16 @@ Production configuration: typed detectors plus open-set detectors, label-free pr
 - Over five seeds AP is 0.892 ± 0.004 (range 0.886–0.895).
 - Baselines: a random submission scores about 0. The single exact-address rule scores AP 0.09. Record-level information alone scores AP 0.04.
 
+## The heterogeneous graph
+
+Each run exports the graph it works on (`graph/` in the run folder) with a content hash, so a case can be traced to the exact graph version. The same inputs and configuration give the same hash. At the snapshot the starter graph has:
+- 10,089 nodes of 12 types: vendor records, resolved entities, addresses, contact points, declared groups, engagements, employees, service categories, institutions, registry legal entities, natural persons and accounting parents;
+- 20,438 edges of 19 relation types.
+
+Every edge keeps its valid time, observation time, source table and record, and the match confidence where entity resolution is involved. Uncertain registry matches stay in the graph as candidates rather than being dropped or silently accepted.
+
+The graph also checks itself: endpoints exist, only permitted type–relation–type triples occur, and nothing is observed after the snapshot.
+
 ## What the experiments show
 
 **1. Relational information adds a large gain** (`ladder`, `fixed`)
@@ -116,7 +126,6 @@ We removed each type's dedicated detector in turn and measured recall for that t
 
 - Every number above is on the development set. The main data is about 20 times larger, with a lower share of planted cases and more benign look-alikes, so expect more false positives near the top.
 - Emergence-date rules cannot be checked until the validation labels arrive.
-- Still to build: a canonical graph export (typed node and edge tables with valid time, observed time, source and match confidence, plus a graph hash).
 - Still to do: interactive case browsing and a small review exercise (Dossier §13.3).
 - Questions for the sponsor:
   - the official matching threshold and scoring script;

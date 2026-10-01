@@ -233,7 +233,8 @@ def case_package(ctx: Context, case: Case, rank: int, meta: dict) -> str:
         tl_rows.append(f"| {_fmt_date(x.valid)} | {_fmt_date(x.observed)} | {x.record_id} | {x.event} |")
     return "\n\n".join([
         f"# Case {rank}: {' | '.join(select_tags(case))}",
-        (f"Snapshot {meta['snapshot']} · run `{meta['run']}` · config `{meta['config_hash']}` · commit `{meta['git_commit']}`  \n"
+        (f"Snapshot {meta['snapshot']} · run `{meta['run']}` · graph `{meta.get('graph_hash', 'n/a')}` · "
+         f"config `{meta['config_hash']}` · commit `{meta['git_commit']}`  \n"
          f"Ranking score {case.calibrated:.3f} (a review priority, not a probability) · emerged {_fmt_date(case.emerged_at)} · "
          f"detectors: {', '.join(case.detectors)}"),
         "## Members", members_table(ctx, case),
@@ -247,6 +248,7 @@ def case_package(ctx: Context, case: Case, rank: int, meta: dict) -> str:
         "## Relationship sketch", sketch(ctx, case),
         "## Provenance",
         (f"- inputs: {', '.join(f'{k}={v}' for k, v in sorted(meta['input_hashes'].items()))}\n"
+         f"- graph: `{meta.get('graph_hash', 'n/a')}` (node and edge tables in the run's `graph/` folder)\n"
          f"- detector parameters: see `run.json` of run `{meta['run']}`\n"
          f"- reproduce: `meridian --config <config> --out <dir>` with the same inputs gives the same case"),
     ])

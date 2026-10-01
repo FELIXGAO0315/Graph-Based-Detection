@@ -140,12 +140,23 @@ def main(argv=None):
         "checks": checks["status"].value_counts().to_dict(),
     }
     print(f"candidates={len(cands)} cases={len(cases)} submitted={len(sub)} runtime={runtime:.1f}s -> {out}")
+
+    # The canonical heterogeneous graph behind this run, with its content hash.
+    from .graph import build_graph, export, validate
+    g = build_graph(ctx)
+    meta["graph"] = export(g, out / "graph")
+    problems = validate(g)
+    meta["graph"]["problems"] = problems
+    print(f"graph {meta['graph']['graph_hash']}: {len(g.nodes)} nodes, {len(g.edges)} edges"
+          + (f"; problems: {problems}" if problems else "") + f" -> {out / 'graph'}")
+
     if a.packages:
         from .explain import config_hash, write_packages
         ordered = sorted((c for c in cases if c.rank is not None), key=lambda c: c.rank)
         pk = write_packages(ctx, ordered, out / "cases", {
             "snapshot": str(ctx.t.date()), "run": out.name, "config_hash": config_hash(cfg),
-            "git_commit": meta["git_commit"], "input_hashes": ctx.b.input_hashes}, top=a.packages)
+            "git_commit": meta["git_commit"], "input_hashes": ctx.b.input_hashes,
+            "graph_hash": meta["graph"]["graph_hash"]}, top=a.packages)
         print(f"case packages for the top {min(a.packages, len(ordered))} cases -> {pk}")
 
     if not a.no_score and cfg.get("labels"):
