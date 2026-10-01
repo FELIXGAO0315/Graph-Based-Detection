@@ -20,6 +20,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest==8.3.3"]
+# Optional graph embeddings; for the CPU build use requirements-gnn.txt.
+gnn = ["torch==2.10.0", "torch_geometric==2.8.0.post1"]
 
 [project.scripts]
 meridian = "meridian.run:main"
