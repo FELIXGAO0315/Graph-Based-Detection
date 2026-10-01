@@ -21,6 +21,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest==8.3.3"]
 
+[project.scripts]
+meridian = "meridian.run:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

@@ -1,0 +1,62 @@
+# Default run configuration. Paths are relative to the repository root.
+bundle: student_bundle
+labels: student_bundle/labelled_cases_TRAINING_SET.parquet   # read by the scorer and calibrate only
+snapshot: "2026-06-30"
+# Only cases emerging inside this window are submitted. null = no filter
+# (the starter labels carry no emergence dates, so starter runs use null).
+# Test period: ["2025-07-01", "2026-06-30"]; validation: ["2024-07-01", "2025-06-30"].
+window: null
+seed: 0                  # Louvain communities and isolation forests; see stability.md for other seeds
+
+scorer:
+  measure: iou
+  threshold: 0.5
+
+features:
+  ownership: true        # switch for the ownership layer (registry R)
+  open_set: true         # generic detectors for patterns outside the 14 tags
+
+detectors: all           # or a list of detector names
+
+cases:
+  merge_iou: 0.8         # same members: merge, keep the boundary
+  union_iou: 0.5         # overlapping groups from different detectors: merge into the union
+  max_growth: 1.5        # ...as long as the union stays within 1.5x the lead candidate
+  merge_days: 365        # only when they emerged within this many days of each other
+  support_days: 365
+
+ranking:
+  max_cases: 100
+  calibration: prior     # prior | file | insample | crossfit
+  calibration_file: artifacts/calibration.json
+  folds: 3
+  prior: 0.5
+  corroboration: 0.5     # share of the noisy-OR gain credited for other detectors on the same case
+  detector_priors:       # label-free design choice: open-set cases fill in behind typed ones
+    rare_sharing_community: 0.3
+    entity_change_point: 0.3
+    duplicate_paid: 0.3
+    entity_outlier: 0.3
+  interleave: true
+  tag_ratio: 0.85        # submit tags whose evidence is within this share of the strongest
+  decay: 0.85            # effective score x decay^(cases already chosen with the same primary tag)
+  dup_penalty: 0.5       # x this when a case nearly duplicates a chosen one (IoU >= 0.5)...
+  contained: 0.6         # ...or when this share of its members already sits in a chosen case
+  include_policy: true   # single-record policy findings (scored separately by the sponsor)
+
+# Detector parameters. Label descriptions ("5x", "two months") are starting points only.
+params:
+  shared_address: {min_entities: 3}
+  sponsor: {window_days: 60, min_new: 4, min_ratio: 3.0}
+  approval: {min_pair: 5, min_sponsor_share: 0.5, min_eligible: 3}
+  dense_cluster: {min_pair_types: 4, min_size: 4, min_cover: 0.8, min_covered_types: 4}
+  rapid_onboarding: {window_days: 14, min_linked: 4}
+  bridge: {min_foreign_links: 2}
+  geography: {window_days: 365, min_new: 4, min_ratio: 3.0}
+  activity: {min_spike_ratio: 2.5, min_vendors: 3, post_termination_min_months: 1}
+  common_owner: {min_entities: 2}
+  layered: {min_layers: 4}
+  ownership_change: {window_days: 90, min_signals: 2}
+  fmv: {band_map: {}}
+  open_set: {resolutions: [3, 10, 30], min_size: 3, max_size: 15, min_cover: 0.6, min_types: 2,
+             change_window_days: 90, min_change_kinds: 3, outlier_top_share: 0.02}
