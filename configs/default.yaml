@@ -32,6 +32,8 @@ ranking:
   folds: 3
   prior: 0.5
   corroboration: 0.5     # share of the noisy-OR gain credited for other detectors on the same case
+  count_evidence_once: true  # other detectors corroborate only with evidence edges not already counted
+  min_pool: 5            # detectors with fewer candidates get percentile 0.5
   detector_priors:       # label-free design choice: open-set cases fill in behind typed ones
     rare_sharing_community: 0.3
     entity_change_point: 0.3

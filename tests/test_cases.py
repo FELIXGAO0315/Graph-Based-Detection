@@ -2,14 +2,14 @@ import pandas as pd
 
 from meridian.cases import Case, assemble
 from meridian.detectors.base import Candidate
-from meridian.ranking import calibrate_cases, order, select_tags
+from meridian.ranking import calibrate_cases, order, percentiles, select_tags
 
 T = pd.Timestamp
 
 
-def cand(members, tag, det, emerged, until=None, score=1.0, timeless=False, benign=()):
+def cand(members, tag, det, emerged, until=None, score=1.0, timeless=False, benign=(), edges=()):
     return Candidate(members=members, tags=(tag,), score=score, emerged_at=T(emerged), active_until=until,
-                     detector=det, reason=det, benign=list(benign), timeless=timeless)
+                     detector=det, reason=det, benign=list(benign), timeless=timeless, edges=tuple(edges))
 
 
 def test_same_members_in_periods_that_do_not_meet_stay_apart():
@@ -37,6 +37,23 @@ def test_overlapping_groups_from_different_detectors_merge_into_the_union():
     b = cand({"A", "B", "C", "E"}, "ACTIVITY_TIMING_CONCENTRATION", "spikes", "2025-02-01")
     cases = assemble([a, b])
     assert len(cases) == 1 and cases[0].members == frozenset("ABCDE")
+
+
+def test_shared_evidence_is_counted_once():
+    def case_with(edges_b):
+        a = cand({"A", "B"}, "COMMON_BENEFICIAL_OWNER", "owner", "2022-01-01", edges=["o1", "o2"])
+        b = cand({"A", "B"}, "OWNERSHIP_OPERATIONAL_OVERLAP", "overlap", "2022-01-01", edges=edges_b)
+        cases = assemble([a, b])
+        calibrate_cases(cases)
+        return cases[0].calibrated
+    assert case_with(["o1", "o2"]) < case_with(["s1", "s2"])
+
+
+def test_small_detector_pools_get_a_mid_percentile():
+    lone = Case(members=frozenset("AB"), tags=("X",), score=1, emerged_at=None,
+                candidates=[cand({"A", "B"}, "POLICY_VIOLATION", "fmv", "2025-01-01", score=9)])
+    assert percentiles([lone])[id(lone.lead)] == 0.5
+    assert percentiles([lone], min_pool=1)[id(lone.lead)] == 0.5
 
 
 def test_benign_explanation_only_discounts_its_own_signal():
