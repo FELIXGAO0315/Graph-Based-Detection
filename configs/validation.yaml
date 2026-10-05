@@ -1,0 +1,8 @@
+# Validation run on the main data: the method in default.yaml, unchanged. Only the data,
+# the snapshot and the emergence window differ. Score once with the validation labels
+# before changing anything (see "Validation and test runs" in README.md).
+extends: default.yaml
+bundle: main_bundle                    # the main data release (set the path when it arrives)
+labels: null                           # the validation labels, once released
+snapshot: "2025-06-30"                 # as of the end of the validation period
+window: ["2024-07-01", "2025-06-30"]   # keep cases that emerge in the validation period

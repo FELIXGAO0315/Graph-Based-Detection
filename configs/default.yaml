@@ -4,7 +4,7 @@ labels: student_bundle/labelled_cases_TRAINING_SET.parquet   # read by the score
 snapshot: "2026-06-30"
 # Only cases emerging inside this window are submitted. null = no filter
 # (the starter labels carry no emergence dates, so starter runs use null).
-# Test period: ["2025-07-01", "2026-06-30"]; validation: ["2024-07-01", "2025-06-30"].
+# Validation and test runs set it in configs/validation.yaml and configs/test.yaml.
 window: null
 seed: 0                  # Louvain communities and isolation forests; see stability.md for other seeds
 

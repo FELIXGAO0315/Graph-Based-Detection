@@ -1,0 +1,7 @@
+# Test run on the main data: the frozen method in default.yaml, unchanged. The sponsor
+# scores the submission blind (see "Validation and test runs" in README.md).
+extends: default.yaml
+bundle: main_bundle                    # the main data release (set the path when it arrives)
+labels: null                           # no labels: blind test
+snapshot: "2026-06-30"
+window: ["2025-07-01", "2026-06-30"]   # keep cases that emerge in the test period

@@ -1,10 +1,14 @@
 """Command-line entry point: one command from raw data to submission and local score.
 
     meridian --config configs/default.yaml [--out artifacts/runs/NAME] [--set key=value ...]
+
+A config may start with `extends: <file>`: it then holds only the keys that differ
+from that file (configs/validation.yaml and configs/test.yaml extend default.yaml).
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import platform
 import subprocess
@@ -25,9 +29,25 @@ from .ranking import SUBMISSION_COLUMNS, rank
 ROOT = Path(__file__).resolve().parents[2]
 
 
+# Keys that say which data to run on and which cases to keep; every other key is part of
+# the method, which must not change between the validation and the test run.
+DATA_KEYS = ("bundle", "labels", "snapshot", "window")
+
+
+def _merge(base: dict, over: dict) -> dict:
+    out = dict(base)
+    for k, v in over.items():
+        out[k] = _merge(out[k], v) if isinstance(v, dict) and isinstance(out.get(k), dict) else v
+    return out
+
+
 def load_config(path, overrides=()) -> dict:
+    path = Path(path)
     with open(path) as fh:
-        cfg = yaml.safe_load(fh)
+        cfg = yaml.safe_load(fh) or {}
+    parent = cfg.pop("extends", None)
+    if parent:
+        cfg = _merge(load_config(path.parent / parent), cfg)
     for item in overrides:
         key, val = item.split("=", 1)
         node = cfg
@@ -36,6 +56,12 @@ def load_config(path, overrides=()) -> dict:
             node = node.setdefault(p, {})
         node[parts[-1]] = yaml.safe_load(val)
     return cfg
+
+
+def method_hash(cfg: dict) -> str:
+    """Hash of the method settings: the config without the data keys."""
+    method = {k: v for k, v in cfg.items() if k not in DATA_KEYS}
+    return hashlib.sha256(json.dumps(method, sort_keys=True, default=str).encode()).hexdigest()[:12]
 
 
 def _git_commit() -> str:
@@ -138,7 +164,7 @@ def main(argv=None):
             }, default=str, sort_keys=True) + "\n")
 
     meta = {
-        "version": __version__, "git_commit": _git_commit(), "config": cfg,
+        "version": __version__, "git_commit": _git_commit(), "method_hash": method_hash(cfg), "config": cfg,
         "input_hashes": ctx.b.input_hashes, "snapshot": str(ctx.t.date()),
         "runtime_sec": round(runtime, 2), "python": platform.python_version(),
         "pandas": pd.__version__, "n_candidates": len(cands), "n_cases": len(cases),
@@ -174,7 +200,7 @@ def main(argv=None):
         res.pop("_matches").to_csv(out / "matches.csv", index=False)
         meta["score"] = res
         meta["coverage"] = float(cov["covered"].mean())
-        print("[dev scorer, starter labels]", summary_line(res))
+        print(f"[dev scorer, {Path(cfg['labels']).name}]", summary_line(res))
         print(f"candidate coverage={cov['covered'].mean():.3f} "
               f"({int(cov['covered'].sum())}/{len(cov)} planted cases reachable by some candidate)")
     (out / "run.json").write_text(json.dumps(meta, indent=2, default=str))

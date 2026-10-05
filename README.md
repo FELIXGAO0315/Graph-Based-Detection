@@ -33,17 +33,35 @@ Each run writes to `artifacts/runs/<timestamp>/` (or `--out <dir>`):
 - `graph/`: the heterogeneous graph the detectors ran on (`nodes.parquet`, `edges.parquet`,
   `activity.parquet` with monthly payments per engagement) and `graph.json` with its content hash;
 - `cases.jsonl` (evidence per case), `checks.md` (data checks) and the entity-resolution lists;
-- `run.json`: config, input hashes, versions and local scores.
+- `run.json`: config, method hash, input hashes, versions and local scores.
 
 Scores on the starter labels come from our own development scorer (`src/meridian/scorer.py`) and
 describe the development set only.
 
 See `reports/results.md` for current results and findings.
 
+## Validation and test runs
+
+The method is fixed before the main data is used, so that neither the validation nor the test
+result has been tuned on. `configs/validation.yaml` and `configs/test.yaml` extend
+`configs/default.yaml` and change only the data keys: `bundle`, `labels`, `snapshot` and `window`.
+Every other setting is part of the method; `run.json` records its hash as `method_hash`.
+
+1. Freeze: commit and tag the method (for example `git tag frozen-1`).
+2. Point `bundle` in both files at the main data release.
+3. Validation, once the validation labels arrive: set `labels` and run
+   `meridian --config configs/validation.yaml`. Record the scores before changing anything.
+4. A change made after seeing the validation scores is a new frozen version; report its validation
+   scores next to the first version's.
+5. Test: `meridian --config configs/test.yaml --no-score` with the frozen version. Its
+   `method_hash` must equal the validation run's.
+
 ## Layout
 
 ```text
 configs/default.yaml         run configuration: snapshot, window, detector parameters, ranking
+configs/validation.yaml      main data, validation period (extends default.yaml)
+configs/test.yaml            main data, test period (extends default.yaml)
 src/meridian/
   data.py                    loading, registry parsing, as_of(t)
   checks.py                  data checks (contract, keys, dates, Dossier Appendix B tests)

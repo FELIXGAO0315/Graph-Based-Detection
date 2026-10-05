@@ -4,7 +4,7 @@ import pytest
 from meridian.data import as_of
 from meridian.context import Context
 from meridian.detectors.base import OPEN_SET_TAG, POLICY_TAG, TAGS
-from meridian.run import ROOT, load_config, pipeline
+from meridian.run import ROOT, load_config, method_hash, pipeline
 
 
 @pytest.fixture(scope="module")
@@ -93,6 +93,15 @@ def test_results_do_not_depend_on_source_row_order(bundle, run):
     cfg = load_config(ROOT / "configs" / "default.yaml")
     cols = ["case_rank", "member_record_ids", "typology_tags", "score"]
     pd.testing.assert_frame_equal(pipeline(cfg, shuffled)[0][cols], run[0][cols])
+
+
+def test_validation_and_test_configs_run_the_default_method():
+    base = load_config(ROOT / "configs" / "default.yaml")
+    for name, window in (("validation", ["2024-07-01", "2025-06-30"]), ("test", ["2025-07-01", "2026-06-30"])):
+        cfg = load_config(ROOT / "configs" / f"{name}.yaml")
+        assert cfg["window"] == window and cfg["params"] == base["params"]
+        assert method_hash(cfg) == method_hash(base)
+    assert method_hash(load_config(ROOT / "configs" / "default.yaml", ["params.layered.min_layers=5"])) != method_hash(base)
 
 
 def test_pipeline_runs_with_a_relation_family_removed(bundle):
