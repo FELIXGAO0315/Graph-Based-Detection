@@ -247,10 +247,12 @@ def _scaled(key: str, v, factor: float):
 
 def stability(bundle, base, truth) -> pd.DataFrame:
     rows = []
-    for meas in ("iou", "overlap_coef"):
-        for th in (0.3, 0.5, 0.7):
+    # The official matching threshold is not published; 0.5001 stands for "IoU > 0.5".
+    for meas, ths in (("iou", (0.3, 0.5, 0.5001, 0.6, 0.7)), ("overlap_coef", (0.3, 0.5, 0.7))):
+        for th in ths:
             s = ScorerConfig(meas, th)
-            rows.append({"experiment": "scorer threshold", "setting": f"{meas}>={th}", **run_eval(bundle, base, truth, s)})
+            setting = f"{meas}>0.5" if th == 0.5001 else f"{meas}>={th}"
+            rows.append({"experiment": "scorer threshold", "setting": setting, **run_eval(bundle, base, truth, s)})
     scfg = ScorerConfig(**base.get("scorer", {}))
     for factor in (0.75, 1.25):
         over = {f"params.{key}": _scaled(key, v, factor) for key, v in THRESHOLD_PARAMS.items()}
@@ -285,6 +287,18 @@ def stability(bundle, base, truth) -> pd.DataFrame:
     for inter in (False, True):
         rows.append({"experiment": "type interleaving", "setting": str(inter),
                      **run_eval(bundle, _cfg(base, **{"ranking.interleave": inter}), truth, scfg)})
+    # Each assembly and ranking choice switched back on its own (the first row is the default).
+    for name, over in {"default": {},
+                       "corroboration counts shared evidence again": {"ranking.count_evidence_once": False},
+                       "percentiles also for detectors with 2-4 candidates": {"ranking.min_pool": 2},
+                       "candidate joins the first qualifying case": {"cases.best_match": False},
+                       "open-set candidates may widen a case": {"cases.open_set_grows": True},
+                       "findings on the same structure join (edge share 0.8)": {"cases.evidence_union": 0.8},
+                       "fragment rule at 60% of members": {"ranking.contained": 0.6}}.items():
+        sub, _, cands, _, _ = pipeline(_cfg(base, **over), bundle)
+        for meas_th, s in (("iou>=0.5", scfg), ("iou>=0.7", ScorerConfig("iou", 0.7))):
+            rows.append({"experiment": "assembly and ranking choice", "setting": f"{name} [{meas_th}]",
+                         **evaluate(sub, cands, truth, bundle, s)})
     # Random seeds (Louvain communities, isolation forests); the base config uses seed 0.
     for seed in (0, 1, 2, 3, 4):
         rows.append({"experiment": "random seed", "setting": f"seed={seed}",
