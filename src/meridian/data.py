@@ -201,6 +201,42 @@ def parse_registry_r(path: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFra
     return ents, pers, ints
 
 
+# Every table is put in a fixed order defined by its content, so that results never
+# depend on the row order of the source files (Dossier Appendix B: same inputs give
+# the same results), and tables rebuilt from the graph line up with the originals.
+CANONICAL_ORDER = {
+    "third_parties": ["record_id"],
+    "tp_due_diligence": ["record_id"],
+    "tp_address_history": ["record_id", "valid_from", "observed_at", "raw_address"],
+    "tp_services": ["record_id", "valid_from", "taxonomy_version", "category_code"],
+    "tp_engagements": ["engagement_id"],
+    "tp_engagement_approvals": ["approval_id"],
+    "tp_payments_monthly": ["engagement_id", "month", "expense_classification", "channel"],
+    "tp_institution_links": ["link_id"],
+    "healthcare_institutions": ["institution_id"],
+    "employees": ["employee_id"],
+    "employee_roles": ["employee_id", "valid_from"],
+    "markets": ["market_id"],
+    "paying_entities": ["paying_entity_id"],
+    "service_categories": ["category_code_v2"],
+    "approval_policy_matrix": ["value_band"],
+    "fmv_rate_cards": ["card_version", "country_band", "expert_role", "activity_type"],
+    "country_risk_context": ["iso2", "index", "edition_year"],
+    "business_events": ["start_date", "event_name"],
+    "registry_l": ["child_lei", "relationship_start", "parent_legal_name"],
+    "reg_entities": ["statement_id"],
+    "reg_persons": ["statement_id"],
+    "reg_interests": ["statement_id", "start_date", "details"],
+}
+
+
+def canonical(name: str, df: pd.DataFrame) -> pd.DataFrame:
+    keys = [k for k in CANONICAL_ORDER.get(name, []) if k in df.columns]
+    if not keys or df.empty:
+        return df.reset_index(drop=True)
+    return df.sort_values(keys, kind="stable", na_position="last").reset_index(drop=True)
+
+
 def load_bundle(bundle_dir: str | Path) -> Bundle:
     bundle_dir = Path(bundle_dir)
     hashes: dict[str, str] = {}
@@ -219,9 +255,9 @@ def load_bundle(bundle_dir: str | Path) -> Bundle:
 
     reg_r = bundle_dir / "registry_R" / "statements.json"
     hashes["registry_R/statements.json"] = _file_hash(reg_r)
-    ents, pers, ints = parse_registry_r(reg_r)
-    return Bundle(**tables, reg_entities=ents, reg_persons=pers, reg_interests=ints,
-                  as_of=SNAPSHOT, source_dir=str(bundle_dir), input_hashes=hashes)
+    tables["reg_entities"], tables["reg_persons"], tables["reg_interests"] = parse_registry_r(reg_r)
+    tables = {name: canonical(name, df) for name, df in tables.items()}
+    return Bundle(**tables, as_of=SNAPSHOT, source_dir=str(bundle_dir), input_hashes=hashes)
 
 
 # ---------------------------------------------------------------------------

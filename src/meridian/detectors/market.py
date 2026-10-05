@@ -6,6 +6,7 @@ import pandas as pd
 
 from ..context import Context
 from .base import Candidate
+from .evidence import engagement_edges, link_edges
 
 BENIGN_BRIDGE_PARENTS = {"RND", "SCM"}  # CROs, logistics: cross-border by design
 
@@ -48,6 +49,7 @@ def detect_bridge(ctx: Context) -> list[Candidate]:
             evidence={"links": g[["link_id", "institution_id", "inst_country", "link_type", "public_sector",
                                   "valid_from", "valid_to"]].to_dict("records")},
             benign=benign, features={"n_foreign": len(foreign), "public": public, "single_local": single_local},
+            edges=tuple(link_edges(ctx, g["link_id"]) + engagement_edges(ctx, e["engagement_id"])),
         ))
     return out
 
@@ -107,5 +109,7 @@ def detect_geography(ctx: Context) -> list[Candidate]:
             evidence={"market": mkt, "window_start": lo, "engagements": list(win["engagement_id"]),
                       "cpi_tier": cpi_tier, "baseline_per_year": baseline},
             benign=benign, features={"n_new": n_new, "ratio": ratio, "cpi_tier": cpi_tier, "sponsor_share": sp_share},
+            edges=tuple(engagement_edges(ctx, win["engagement_id"],
+                                         ("CONTRACTED_UNDER", "SPONSORED_BY", "FOR_SERVICE"))),
         ))
     return out

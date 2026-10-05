@@ -1,7 +1,12 @@
 """Per-time-point context shared by all detectors.
 
-Built once from an as_of(t) bundle. Derived views are computed lazily and
-cached, so detectors only pay for what they use.
+Two ways to build it:
+  Context(bundle)                    from source tables; used to build the graph
+                                     (normalisation and entity resolution happen here)
+  Context.from_graph(graph, ref)     from the canonical graph; used by detection, so
+                                     detectors see only what the graph holds
+
+Derived views are computed lazily and cached, so detectors only pay for what they use.
 """
 from __future__ import annotations
 
@@ -30,10 +35,36 @@ EVENT_RULES = {
 
 
 class Context:
-    def __init__(self, bundle: Bundle, cfg: dict | None = None):
+    def __init__(self, bundle: Bundle, cfg: dict | None = None, graph=None, precomputed: dict | None = None):
         self.b = bundle
         self.t = bundle.as_of
         self.cfg = cfg or {}
+        self.graph = graph
+        self._pre = precomputed or {}
+
+    @classmethod
+    def for_detection(cls, view: Bundle, cfg: dict | None = None, drop_relations=(), drop_activity: bool = False):
+        """Build the canonical graph from an as_of view, then a Context that reads only the graph.
+
+        `drop_relations` / `drop_activity` remove edge types or the payment activity from
+        the graph before detection (relation ablation); entity resolution is unaffected.
+        """
+        from .graph import build_graph, without
+        graph = build_graph(cls(view, cfg))
+        if drop_relations or drop_activity:
+            graph = without(graph, drop_relations, drop_activity)
+        return cls.from_graph(graph, view, cfg)
+
+    @classmethod
+    def from_graph(cls, graph, reference: Bundle, cfg: dict | None = None) -> "Context":
+        """Context whose tables, entity resolution and normalised keys all come from `graph`.
+
+        `reference` supplies only the reference tables (taxonomy, policy, rate cards,
+        country context, business events) and the input hashes.
+        """
+        from .graph_views import bundle_from_graph
+        bundle, pre = bundle_from_graph(graph, reference)
+        return cls(bundle, cfg, graph=graph, precomputed=pre)
 
     @property
     def use_ownership(self) -> bool:
@@ -56,6 +87,8 @@ class Context:
 
     @cached_property
     def _resolution(self):
+        if "entity_map" in self._pre:
+            return self._pre["entity_map"], self._pre["identity_pairs"]
         return res.resolve_duplicates(self.b, self.rcfg.get("name_merge", "corroborated"))
 
     @cached_property
@@ -92,10 +125,14 @@ class Context:
     # ------------------------------------------------------------------
     @cached_property
     def addresses(self) -> pd.DataFrame:
+        if "addresses" in self._pre:
+            return self._pre["addresses"]
         return res.normalise_addresses(self.b)
 
     @cached_property
     def contacts(self) -> pd.DataFrame:
+        if "contacts" in self._pre:
+            return self._pre["contacts"]
         return res.normalise_contacts(self.b)
 
     # ------------------------------------------------------------------
@@ -265,6 +302,8 @@ class Context:
     # ------------------------------------------------------------------
     @cached_property
     def reg_matches(self) -> pd.DataFrame:
+        if "reg_matches" in self._pre:  # already shaped by the resolution settings when the graph was built
+            return self._pre["reg_matches"]
         m = pd.concat([res.match_registry(self.b), res.match_persons(self.b)], ignore_index=True)
         rc = self.rcfg
         by_name = ~m["method"].isin(["registry_no", "lei"])

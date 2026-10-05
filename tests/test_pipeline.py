@@ -49,7 +49,7 @@ def test_ownership_switch_removes_ownership_candidates(bundle):
 def test_layered_structure_found_in_history(bundle):
     # TP-98B17648 was layered through a trust until 2019, then acquired via a BVI holdco.
     from meridian.detectors.ownership import detect_change, detect_layered
-    ctx = Context(as_of(bundle, "2026-06-30"))
+    ctx = Context.for_detection(as_of(bundle, "2026-06-30"))
     layered = [c for c in detect_layered(ctx) if "TP-98B17648" in c.members]
     change = [c for c in detect_change(ctx) if "TP-98B17648" in c.members]
     assert layered and change
@@ -81,6 +81,15 @@ def test_case_packages_have_required_sections(run, tmp_path):
                                              "git_commit": "x", "input_hashes": {}}, top=3)
     text = (tmp_path / "case_001.md").read_text()
     for section in ["## Members", "## Why flagged", "## Benign explanations to check first", "## Evidence",
-                    "## Timeline", "## Ownership", "## Relationship sketch", "## Provenance"]:
+                    "## Timeline", "## Ownership", "## Evidence edges", "## Evidence subgraph", "## Provenance"]:
         assert section in text
     assert (tmp_path / "README.md").exists()
+
+
+def test_results_do_not_depend_on_source_row_order(bundle, run):
+    from dataclasses import replace
+    shuffled = replace(bundle, **{n: df.sample(frac=1, random_state=7).reset_index(drop=True)
+                                  for n, df in bundle.tables().items()})
+    cfg = load_config(ROOT / "configs" / "default.yaml")
+    cols = ["case_rank", "member_record_ids", "typology_tags", "score"]
+    pd.testing.assert_frame_equal(pipeline(cfg, shuffled)[0][cols], run[0][cols])

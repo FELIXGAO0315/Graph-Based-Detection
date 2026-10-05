@@ -9,6 +9,7 @@ import pandas as pd
 
 from ..context import Context
 from .base import Candidate
+from .evidence import item_edges, shared_item_edges
 from .relations import IDENTITY_TYPES, LINK_TYPES, entity_country, entity_items, entity_onboarding, idf, pair_links
 
 
@@ -92,6 +93,7 @@ def detect_dense(ctx: Context) -> list[Candidate]:
             evidence={"coverage": {t: {"item": k, "share": s} for t, (k, s) in cov.items()}},
             benign=benign,
             features={"size": len(comp), "covered_types": len(covered), "rarity": rarity},
+            edges=tuple(shared_item_edges(ctx, {t: k for t, (k, _) in covered.items()}, members)),
         ))
     return out
 
@@ -154,5 +156,8 @@ def detect_rapid_onboarding(ctx: Context) -> list[Candidate]:
                       "link_types": dict(types)},
             benign=benign,
             features={"n_linked": len(comp), "ratio": ratio},
+            edges=tuple(eid for a in comp for b in comp if a < b and (a, b) in link
+                        for t, keys in link[(a, b)].items() if t in STRUCTURAL_LINKS for k in keys
+                        for eid in item_edges(ctx, t, k, ctx.records_of[a] | ctx.records_of[b])),
         ))
     return out

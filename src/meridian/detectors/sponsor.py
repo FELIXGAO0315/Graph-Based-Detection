@@ -11,8 +11,16 @@ CENTRAL_ROLES = {"category_manager", "procurement_ss", "system_default"}
 
 
 def first_engagements(ctx: Context) -> pd.DataFrame:
-    """First engagement of each (sponsor, vendor entity) pair."""
-    e = ctx.engagements.dropna(subset=["sponsor_employee_id"]).copy()
+    """First engagement of each (sponsor, vendor entity) pair.
+
+    Sponsorships are the instances of the meta-path
+    VendorRecord -CONTRACTED_UNDER-> Engagement -SPONSORED_BY-> Employee;
+    e1 and e2 are the two edges of each instance.
+    """
+    from ..graph_ops import hetero
+    mp = hetero(ctx).metapath("CONTRACTED_UNDER", "SPONSORED_BY")
+    inst = pd.DataFrame({"engagement_id": mp["n1"].str.slice(len("engagement:")), "e1": mp["e1"], "e2": mp["e2"]})
+    e = ctx.engagements.merge(inst, on="engagement_id", how="inner")
     e["entity"] = e["record_id"].map(ctx.entity_of)
     return (e.sort_values("start_date")
             .groupby(["sponsor_employee_id", "entity"], as_index=False).first())
@@ -90,5 +98,6 @@ def detect(ctx: Context) -> list[Candidate]:
                       "peer_definition": peer_def, "engagements": list(win["engagement_id"])},
             benign=benign,
             features={"max_new": r.max_new, "ratio": ratio, "cat_share": cat_share},
+            edges=tuple(win["e1"]) + tuple(win["e2"]),
         ))
     return out

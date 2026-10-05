@@ -11,7 +11,7 @@ meridian-exp ladder       # or a single experiment
 |---|---|
 | `ladder` | complete-pipeline representation ladder A–D |
 | `fixed` | fixed candidate set, same scorers, features A–D |
-| `ablation` | one relation type removed from the input |
+| `ablation` | one family of edges removed from the graph before detection |
 | `stability` | detector thresholds, scorer threshold, entity resolution, case assembly, random seeds |
 | `perturb` | address typos and dropped registry name matches, 3 seeds |
 | `loto` | leave one type out, with and without open-set detectors |

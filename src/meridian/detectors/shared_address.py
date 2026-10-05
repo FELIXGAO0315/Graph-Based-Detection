@@ -37,11 +37,24 @@ def _peak_concurrency(ctx: Context, g: pd.DataFrame, k: int):
     return best, best_set, reached
 
 
+def address_instances(ctx: Context) -> pd.DataFrame:
+    """Instances of the meta-path VendorRecord -LOCATED_AT-> Address, one row per edge."""
+    from ..graph_ops import hetero
+    mp = hetero(ctx).metapath("LOCATED_AT")
+    a = pd.DataFrame({
+        "record_id": mp["n0"].str.slice(len("vendor:")), "addr_key": mp["n1"].str.slice(len("address:")),
+        "edge_id": mp["e1"], "valid_from": mp["valid_from1"], "valid_to": mp["valid_to1"],
+        "observed_at": mp["observed_at1"], "raw_address": [p.get("raw_address") for p in mp["props1"]],
+        "address_type": [p.get("address_type") for p in mp["props1"]],
+    })
+    return a.sort_values(["record_id", "valid_from", "observed_at", "raw_address"], kind="stable")
+
+
 def detect(ctx: Context) -> list[Candidate]:
+    """Address nodes reached by several vendor entities through overlapping LOCATED_AT edges."""
     k = ctx.param("shared_address", "min_entities", 3)
-    a = ctx.addresses
-    groups = a.groupby("addr_key")
-    sizes = groups["record_id"].transform("nunique")
+    a = address_instances(ctx)
+    sizes = a.groupby("addr_key")["record_id"].transform("nunique")
     a = a[sizes >= 2]
     out = []
     for key, g in a.groupby("addr_key"):
@@ -70,16 +83,15 @@ def detect(ctx: Context) -> list[Candidate]:
             reason=(f"{peak} vendors registered concurrently at one {atype or 'unclassified'} address "
                     f"in {key.split(':')[0]} ('{raw}'); threshold {k} reached {reached.date()}"),
             evidence={"address_key": key, "raw_addresses": sorted(set(g["raw_address"])), "address_type": atype,
-                      "peak_entities": peak, "reached": reached,
-                      "edges": [(r.record_id, "LOCATED_AT", key, r.valid_from, r.valid_to, r.observed_at)
-                                for r in g.itertuples()]},
+                      "peak_entities": peak, "reached": reached},
             benign=benign, features={"peak_entities": peak, "type_weight": type_w},
+            edges=tuple(g.loc[g["record_id"].isin(members), "edge_id"]),
         ))
     return out
 
 
 def detect_exact(ctx: Context) -> list[Candidate]:
-    """Step-1 baseline: identical raw address strings, ignoring time. Kept for the representation ladder."""
+    """Simplest baseline: identical raw address strings, ignoring time. Kept for the representation ladder."""
     a = ctx.b.tp_address_history
     out = []
     for addr, g in a.groupby("raw_address"):

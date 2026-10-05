@@ -160,42 +160,66 @@ def _snapshot_for_case(ov, rec: str, case: Case):
     return before[-1] if before else snaps[0]
 
 
-def sketch(ctx: Context, case: Case, max_items: int = 12) -> str:
-    """Mermaid diagram of members and the items two or more of them share."""
-    from .detectors.ownership import _operational_links
-    m = set(case.members)
-    ids = {r: f"V{i}" for i, r in enumerate(sorted(m))}
+_NODE_LABEL = {"VendorRecord": "vendor", "Address": "address", "ContactPoint": "contact", "Employee": "employee",
+               "Engagement": "engagement", "ServiceCategory": "category", "HealthcareInstitution": "institution",
+               "LegalEntity": "entity", "NaturalPerson": "person", "ResolvedEntity": "entity",
+               "DeclaredGroup": "group", "AccountingParent": "parent"}
+_SHAPE = {"VendorRecord": ('["', '"]'), "NaturalPerson": ('{{"', '"}}'), "LegalEntity": ('[["', '"]]')}
+
+
+# Identity and ownership edges first, process edges last, so a truncated drawing keeps them.
+_RELATION_ORDER = ["LOCATED_AT", "HAS_CONTACT", "SAME_AS", "REGISTERED_AS", "IS_PERSON", "OWNS", "CONTROLS",
+                   "CONSOLIDATED_BY", "SERVES", "SITE_OF", "AFFILIATED_WITH", "SPONSORED_BY", "APPROVED_BY",
+                   "CONTRACTED_UNDER", "FOR_SERVICE", "PROVIDES_SERVICE"]
+
+
+def _evidence_frame(ctx: Context, case: Case) -> pd.DataFrame:
+    if ctx.graph is None or not case.edges:
+        return pd.DataFrame()
+    e = ctx.graph.edges.set_index("edge_id")
+    ev = e.loc[[x for x in case.edges if x in e.index]].reset_index()
+    rank = {r: i for i, r in enumerate(_RELATION_ORDER)}
+    ev["_o"] = ev["relation_type"].map(lambda r: rank.get(r, len(rank)))
+    return ev.sort_values(["_o", "source_node_id", "valid_from"], kind="stable").drop(columns="_o")
+
+
+def evidence_edges_table(ctx: Context, case: Case, limit: int = 60) -> str:
+    """The graph edges behind the case, with their times and sources."""
+    ev = _evidence_frame(ctx, case)
+    if ev.empty:
+        return "_This case rests on record attributes only; no relation edges._"
+    rows = ["| edge | source | relation | target | valid from | valid to | observed | source record | confidence |",
+            "|---|---|---|---|---|---|---|---|---|"]
+    for r in ev.head(limit).itertuples():
+        conf = "" if pd.isna(r.resolution_confidence) else f"{r.resolution_confidence:.2f}"
+        rows.append(f"| {r.edge_id} | {r.source_node_id} | {r.relation_type} | {r.target_node_id} | "
+                    f"{r.valid_from or ''} | {r.valid_to or ''} | {r.observed_at or ''} | "
+                    f"{r.source_table}:{r.source_record_id} | {conf} |")
+    more = f"\n\n{len(ev) - limit} more edges in `cases.jsonl`." if len(ev) > limit else ""
+    return f"{len(ev)} edges in graph `{ctx.graph.hash}`.\n\n" + "\n".join(rows) + more
+
+
+def sketch(ctx: Context, case: Case, max_edges: int = 40) -> str:
+    """Mermaid drawing of the evidence subgraph (the case's own edges in the graph)."""
+    ev = _evidence_frame(ctx, case)
+    if ev.empty:
+        return "_No relation edges to draw._"
+    ev = ev.head(max_edges)
+    nodes = ctx.graph.nodes.set_index("node_id")
+    ids = {n: f"N{i}" for i, n in enumerate(dict.fromkeys(list(ev["source_node_id"]) + list(ev["target_node_id"])))}
     lines = ["```mermaid", "graph LR"]
-    for r, n in ids.items():
-        name = str(ctx.vendors.loc[r, "legal_name"]).replace('"', "'")[:28]
-        lines.append(f'  {n}["{r}<br/>{name}"]')
-    rel = _operational_links(ctx, m)
-    k = 0
-    for kind, items in rel.items():
-        for key, es, _ in items[:max_items]:
-            node = f"I{k}"
-            k += 1
-            lines.append(f'  {node}(("{kind}<br/>{str(key)[:24]}"))')
-            for r in m:
-                if ctx.entity_of.get(r, r) in es:
-                    lines.append(f"  {ids[r]} --- {node}")
-    if ctx.use_ownership:
-        from .detectors.ownership import _view
-        ov = _view(ctx)
-        owners = {}
-        for r in m:
-            snap = _snapshot_for_case(ov, r, case)
-            for p in (snap["persons"] if snap else []):
-                owners.setdefault(p, set()).add(r)
-        for p, rs in owners.items():
-            if len(rs) >= 2 or len(m) == 1:
-                node = f"P{k}"
-                k += 1
-                lines.append(f'  {node}{{{{"{str(ov.node(p)["name"])[:24]}"}}}}')
-                for r in rs:
-                    lines.append(f"  {node} -->|owns| {ids[r]}")
+    for n, short in ids.items():
+        ntype = nodes.at[n, "node_type"] if n in nodes.index else "?"
+        label = str(nodes.at[n, "label"] if n in nodes.index else n).replace('"', "'")[:30]
+        left, right = _SHAPE.get(ntype, ("(", ")"))
+        if left == "(":
+            left, right = '("', '")'
+        lines.append(f"  {short}{left}{_NODE_LABEL.get(ntype, ntype)}<br/>{label}{right}")
+    for r in ev.itertuples():
+        lines.append(f"  {ids[r.source_node_id]} -->|{r.relation_type}| {ids[r.target_node_id]}")
     lines.append("```")
-    return "\n".join(lines)
+    note = f"\nShowing {max_edges} of {len(case.edges)} evidence edges." if len(case.edges) > max_edges else ""
+    return "\n".join(lines) + note
 
 
 def benign_section(case: Case) -> str:
@@ -245,7 +269,8 @@ def case_package(ctx: Context, case: Case, rank: int, meta: dict) -> str:
         "## Timeline", "Valid time is when a fact was true; observed time is when it was recorded or published.",
         "\n".join(tl_rows),
         "## Ownership", ownership_section(ctx, case),
-        "## Relationship sketch", sketch(ctx, case),
+        "## Evidence edges", evidence_edges_table(ctx, case),
+        "## Evidence subgraph", sketch(ctx, case),
         "## Provenance",
         (f"- inputs: {', '.join(f'{k}={v}' for k, v in sorted(meta['input_hashes'].items()))}\n"
          f"- graph: `{meta.get('graph_hash', 'n/a')}` (node and edge tables in the run's `graph/` folder)\n"

@@ -55,10 +55,14 @@ class Candidate:
     # A timeless signal (an outlier score) has no emergence of its own: it adds
     # evidence to a case on the same members but never sets the case's time frame.
     timeless: bool = False
+    # Ids of the graph edges that support this candidate (Dossier Appendix C: the
+    # evidence edges used by each reason); case packages draw them as a subgraph.
+    edges: tuple = ()
 
     def __post_init__(self):
         self.members = frozenset(self.members)
         self.tags = tuple(self.tags)
+        self.edges = tuple(dict.fromkeys(self.edges))
         if self.emerged_at is not None and not pd.isna(self.emerged_at):
             self.emerged_at = pd.Timestamp(self.emerged_at)
         else:

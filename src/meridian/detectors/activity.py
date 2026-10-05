@@ -6,6 +6,7 @@ import pandas as pd
 
 from ..context import Context
 from .base import Candidate
+from .evidence import engagement_edges
 
 def spend_spikes(ctx: Context, min_ratio: float, half_window: int = 6, ramp_up: int = 3) -> pd.DataFrame:
     """Months where a vendor's spend is at least `min_ratio` x its own local median
@@ -84,6 +85,7 @@ def detect_sync_spikes(ctx: Context) -> list[Candidate]:
                     f"{share:.0%} of the sponsor's vendors"),
             evidence={"sponsor": s, "month": m, "spikes": w[["record_id", "month", "amount", "ratio"]].to_dict("records")},
             benign=benign, features={"n_vendors": len(ents), "median_ratio": med_ratio, "sponsor_share": share},
+            edges=tuple(engagement_edges(ctx, e.loc[e["sponsor_employee_id"] == s, "engagement_id"])),
         ))
     return out
 
@@ -114,5 +116,6 @@ def detect_post_termination(ctx: Context) -> list[Candidate]:
             evidence={"terminated": term, "months": [str(pd.Timestamp(x).date()) for x in months],
                       "amount_usd": float(g["amount_usd"].sum())},
             benign=benign, features={"n_months": len(months)},
+            edges=tuple(engagement_edges(ctx, sorted(set(g["engagement_id"])), ("CONTRACTED_UNDER",))),
         ))
     return out

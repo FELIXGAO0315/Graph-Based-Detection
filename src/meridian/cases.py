@@ -41,6 +41,11 @@ class Case:
         return " | ".join(parts)
 
     @property
+    def edges(self) -> tuple:
+        """Graph edges behind the case: the union of its candidates' evidence edges."""
+        return tuple(dict.fromkeys(e for c in self.candidates + self.support for e in c.edges))
+
+    @property
     def benign(self) -> list:
         return list(dict.fromkeys(b for c in self.candidates for b in c.benign))
 

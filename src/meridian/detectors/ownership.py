@@ -21,6 +21,7 @@ import pandas as pd
 from ..context import Context
 from ..resolution import name_key, person_key
 from .base import Candidate
+from .evidence import item_edges, owner_edges, path_edges, registration_edges, statement_edges
 
 # Jurisdiction lists are a documented modelling choice, not an index value from the
 # bundle (FSI and FATF are not loaded in the bundle). "Sink" follows the classic
@@ -179,6 +180,7 @@ def detect_layered(ctx: Context) -> list[Candidate]:
                                    for s in best["sink"] | best["conduit"]}},
             benign=benign, uses_ownership=True,
             features={"layers": best["layers"], "n_jur": len(best["jurisdictions"]), "trust": best["trust"]},
+            edges=tuple(path_edges(ctx, rec, best["paths"])),
         ))
     return out
 
@@ -315,6 +317,7 @@ def detect_common_owner(ctx: Context) -> list[Candidate]:
             benign=benign, uses_ownership=True,
             features={"n_entities": n_ent, "declared_share": declared_share, "name_sim": sim,
                       "expert_owner": bool(own_records)},
+            edges=tuple(owner_edges(ctx, sorted(recs), person)),
         ))
 
         # OWNERSHIP_OPERATIONAL_OVERLAP: the owner group also overlaps operationally.
@@ -344,6 +347,9 @@ def detect_common_owner(ctx: Context) -> list[Candidate]:
                                                        for k in rel}},
                 benign=benign, uses_ownership=True,
                 features={"n_entities": len(overlap_ents), "n_kinds": n_kinds},
+                edges=tuple(owner_edges(ctx, sorted(omembers & recs), person) + [
+                    eid for kind, its in rel.items() for key, es, _ in its
+                    for eid in item_edges(ctx, kind, key, {r for e_ in es for r in ctx.records_of[e_]})]),
             ))
     return out
 
@@ -406,6 +412,7 @@ def detect_opaque(ctx: Context) -> list[Candidate]:
                       "jurisdiction_basis": "IMF 2000 OFC list; Garcia-Bernardo et al. 2017 sink/conduit OFCs"},
             benign=benign, uses_ownership=True,
             features={"sink": bool(m["sink"]), "pep": bool(m["peps"]), "undisclosed": m["undisclosed"]},
+            edges=tuple(eid for r, b_, *_ in items for eid in path_edges(ctx, r, b_["paths"])),
         ))
     return out
 
@@ -486,5 +493,7 @@ def detect_change(ctx: Context) -> list[Candidate]:
                           "signals": signals, "related": sorted(related)},
                 benign=benign, uses_ownership=True,
                 features={"n_signals": len(signals), "n_related": len(related)},
+                edges=tuple(registration_edges(ctx, [rec]) + statement_edges(ctx, [x.statement_id])
+                            + owner_edges(ctx, sorted(related), x.party_sid)),
             ))
     return out

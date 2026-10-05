@@ -10,6 +10,7 @@ import pandas as pd
 
 from ..context import Context
 from .base import POLICY_TAG, Candidate
+from .evidence import engagement_edges
 
 # Service payments counted against the annual cap. Investigators are paid as
 # clinical_services; excluding it finds no breach on the starter data, so it is
@@ -70,5 +71,6 @@ def detect_fmv(ctx: Context) -> list[Candidate]:
             evidence={"year": int(year), "total_fees": float(total), "annual_cap": cap, "card": version,
                       "band": band, "band_mapping": "own mapping, see policy.country_band"},
             features={"excess_ratio": total / cap},
+            edges=tuple(engagement_edges(ctx, sorted(set(g["engagement_id"])), ("CONTRACTED_UNDER",))),
         ))
     return out

@@ -1,9 +1,14 @@
 """Canonical heterogeneous graph: typed node and edge tables plus a content hash.
 
-The detectors read typed relations straight from the source tables; this
-module materialises the same relations as one graph, so that it can be
-inspected, exported to graph tools and fingerprinted (Dossier Appendix B:
-the same inputs, configuration and seed give the same graph hash).
+The graph is the single input of detection: normalisation and entity
+resolution read the source tables to build it, and the detectors then read
+only the graph (through Context.from_graph) plus reference tables such as
+FMV rate cards and the approval policy matrix. It can be inspected,
+exported to graph tools and fingerprinted (Dossier Appendix B: the same
+inputs, configuration and seed give the same graph hash).
+
+Monthly payments are a time series per engagement, not a relation: they are
+kept as an activity table attached to Engagement nodes.
 
 Every edge keeps its valid time (valid_from, valid_to), observation time
 (observed_at), source table and source record, and the entity-resolution
@@ -54,21 +59,25 @@ ALLOWED = {
 }
 
 
+ACTIVITY_KEY = ["node_id", "month", "expense_classification", "channel"]
+
+
 @dataclass
 class Graph:
     nodes: pd.DataFrame
     edges: pd.DataFrame
+    activity: pd.DataFrame          # monthly payments attached to Engagement nodes
     dataset_version: str
     snapshot: pd.Timestamp
 
     @property
     def hash(self) -> str:
-        return graph_hash(self.nodes, self.edges)
+        return graph_hash(self.nodes, self.edges, self.activity)
 
     def summary(self) -> dict:
         return {
             "graph_hash": self.hash, "dataset_version": self.dataset_version, "snapshot": str(self.snapshot.date()),
-            "n_nodes": len(self.nodes), "n_edges": len(self.edges),
+            "n_nodes": len(self.nodes), "n_edges": len(self.edges), "n_activity_rows": len(self.activity),
             "nodes_by_type": self.nodes["node_type"].value_counts().sort_index().to_dict(),
             "edges_by_relation": self.edges["relation_type"].value_counts().sort_index().to_dict(),
         }
@@ -84,6 +93,8 @@ def _json(d: dict) -> str:
             v = v.date().isoformat()
         elif hasattr(v, "item"):
             v = v.item()
+        elif isinstance(v, list):
+            v = [json.loads(_json(x)) if isinstance(x, dict) else x for x in v]
         clean[k] = v
     return json.dumps(clean, sort_keys=True, ensure_ascii=False, default=str)
 
@@ -134,12 +145,16 @@ def build_graph(ctx: Context) -> Graph:
     b = _Builder(dataset_version(ctx.b.input_hashes))
     v = ctx.vendors
 
-    # Vendor records and resolved entities.
+    # Vendor records (with their due-diligence answers) and resolved entities.
+    dd = ctx.b.tp_due_diligence.set_index("record_id")
     for r in v.itertuples(index=False):
+        d = dd.loc[r.record_id].to_dict() if r.record_id in dd.index else {}
         b.node(f"vendor:{r.record_id}", "VendorRecord", r.legal_name, "third_parties",
                party_type=r.party_type, country=r.country, status=r.status, onboarding_date=r.onboarding_date,
-               terminated_date=r.terminated_date, expert_type=r.expert_type, remit_to_country=r.remit_to_country,
-               tax_id=r.tax_id, lei=r.lei, registry_no=r.registry_no)
+               created_date=r.created_date, terminated_date=r.terminated_date, expert_type=r.expert_type,
+               remit_to_country=r.remit_to_country, tax_id=r.tax_id, lei=r.lei, registry_no=r.registry_no,
+               declared_parent_group=r.declared_parent_group, phone=r.phone, email_domain=r.email_domain,
+               **{f"dd_{k}" if not k.startswith("dd_") else k: val for k, val in d.items()})
     em = ctx.entity_map
     for r in em.itertuples(index=False):
         ent = b.node(f"entity:{r.entity_id}", "ResolvedEntity", r.entity_id, "resolution", n_records=r.n_records)
@@ -173,22 +188,30 @@ def build_graph(ctx: Context) -> Graph:
     # leaves the attributes empty; in the starter data some engagements name a
     # sponsor or approver before that person's role starts.
     roles = ctx.roles.set_index("employee_id")
+    names = ctx.b.employees.set_index("employee_id")["name"]
     for emp in ctx.b.employees["employee_id"]:
         r = roles.loc[emp] if emp in roles.index else None
         attrs = {} if r is None else dict(
-            role=r["role"], home_market=r["home_market"], scope_markets=r["scope_markets"],
+            role=r["role"], franchise=r["franchise"], home_market=r["home_market"], scope_markets=r["scope_markets"],
             scope_categories=r["scope_categories"], approver_level=r["approver_level"],
             role_valid_from=r["valid_from"], role_valid_to=r["valid_to"])
-        b.node(f"employee:{emp}", "Employee", emp, "employees", **attrs)
+        b.node(f"employee:{emp}", "Employee", emp, "employees", name=names.get(emp), **attrs)
     cats = ctx.categories
     for code, r in cats.iterrows():
         b.node(f"category:{code}", "ServiceCategory", r["name"], "service_categories", parent=r["parent"],
                flags=r["flags"], category_code_v1=r["category_code_v1"])
+    # Approval events with no recorded approver cannot be an edge (there is no
+    # endpoint); they stay on the engagement so nothing is dropped.
+    ap = ctx.b.tp_engagement_approvals
+    unattributed = {eid: [dict(approval_id=x.approval_id, approval_type=x.approval_type,
+                               approval_date=x.approval_date, observed_at=x.observed_at) for x in g.itertuples()]
+                    for eid, g in ap[ap["approver_employee_id"].isna()].groupby("engagement_id")}
     for r in ctx.engagements.itertuples(index=False):
         en = b.node(f"engagement:{r.engagement_id}", "Engagement", r.engagement_id, "tp_engagements",
                     service_category=r.service_category, taxonomy_version=r.taxonomy_version,
                     business_unit=r.business_unit, market=r.market, contract_type=r.contract_type,
-                    value_band=r.value_band, start_date=r.start_date, end_date=r.end_date)
+                    value_band=r.value_band, start_date=r.start_date, end_date=r.end_date,
+                    approvals_without_approver=unattributed.get(r.engagement_id))
         b.edge(f"vendor:{r.record_id}", "CONTRACTED_UNDER", en, "tp_engagements", r.engagement_id,
                valid_from=r.start_date, valid_to=r.end_date, observed_at=r.observed_at)
         if isinstance(r.sponsor_employee_id, str):
@@ -221,8 +244,12 @@ def build_graph(ctx: Context) -> Graph:
 
     # Ownership (registry R) and accounting parents (registry L).
     if ctx.use_ownership:
+        # Statements where the chain stops (no named owner) belong to the owned entity.
         unspecified = ctx.b.reg_interests[ctx.b.reg_interests["party_kind"] == "unspecified"]
-        stops = unspecified.groupby("subject_sid")["unspecified_reason"].agg(lambda s: ";".join(sorted(set(s))))
+        stops = {sid: [dict(statement_id=x.statement_id, reason=x.unspecified_reason, published=x.statement_date,
+                            interest_type=x.interest_type, details=x.details, share=x.share,
+                            start_date=x.start_date, end_date=x.end_date) for x in g.itertuples()]
+                 for sid, g in unspecified.groupby("subject_sid")}
         for r in ctx.b.reg_entities.itertuples(index=False):
             b.node(f"legal_entity:{r.statement_id}", "LegalEntity", r.name, "registry_R", jurisdiction=r.jurisdiction,
                    entity_type=r.entity_type, entity_subtype=r.entity_subtype, registry_no=r.registry_no, lei=r.lei,
@@ -254,13 +281,26 @@ def build_graph(ctx: Context) -> Graph:
                        valid_from=r.relationship_start, status=r.relationship_status)
 
     nodes, edges = b.frames()
-    return Graph(nodes, edges, b.version, ctx.t)
+    activity = ctx.b.tp_payments_monthly.assign(node_id="engagement:" + ctx.b.tp_payments_monthly["engagement_id"])
+    activity = activity[["node_id"] + [c for c in activity.columns if c != "node_id"]]
+    activity = activity.sort_values(ACTIVITY_KEY).reset_index(drop=True)
+    return Graph(nodes, edges, activity, b.version, ctx.t)
 
 
-def graph_hash(nodes: pd.DataFrame, edges: pd.DataFrame) -> str:
-    """SHA-256 over a canonical serialisation (rows sorted by id, fixed column order)."""
+def without(g: Graph, relations=(), activity: bool = False) -> Graph:
+    """A copy of the graph without the given edge types (and payments if `activity`)."""
+    edges = g.edges[~g.edges["relation_type"].isin(set(relations))].reset_index(drop=True)
+    act = g.activity.iloc[0:0] if activity else g.activity
+    return Graph(g.nodes, edges, act, g.dataset_version, g.snapshot)
+
+
+def graph_hash(nodes: pd.DataFrame, edges: pd.DataFrame, activity: pd.DataFrame | None = None) -> str:
+    """SHA-256 over a canonical serialisation (rows sorted by key, fixed column order)."""
     h = hashlib.sha256()
-    for df, key, cols in ((nodes, "node_id", NODE_COLUMNS), (edges, "edge_id", EDGE_COLUMNS)):
+    parts = [(nodes, ["node_id"], NODE_COLUMNS), (edges, ["edge_id"], EDGE_COLUMNS)]
+    if activity is not None:
+        parts.append((activity, ACTIVITY_KEY, list(activity.columns)))
+    for df, key, cols in parts:
         buf = io.StringIO()
         df.sort_values(key)[cols].to_csv(buf, index=False, lineterminator="\n")
         h.update(buf.getvalue().encode())
@@ -285,15 +325,19 @@ def validate(g: Graph) -> list[str]:
         problems.append("edges with valid_to before valid_from")
     if (pd.to_datetime(g.edges["observed_at"]) > g.snapshot).any():
         problems.append("edges observed after the snapshot")
+    engagements = set(g.nodes.loc[g.nodes["node_type"] == "Engagement", "node_id"])
+    if not g.activity["node_id"].isin(engagements).all():
+        problems.append("activity rows attached to unknown engagements")
     return problems
 
 
 def export(g: Graph, out_dir: str | Path) -> dict:
-    """Write nodes.parquet, edges.parquet and graph.json (hash, version, counts)."""
+    """Write nodes, edges and activity (parquet) and graph.json (hash, version, counts)."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     g.nodes.to_parquet(out / "nodes.parquet", index=False)
     g.edges.to_parquet(out / "edges.parquet", index=False)
+    g.activity.to_parquet(out / "activity.parquet", index=False)
     info = g.summary()
     (out / "graph.json").write_text(json.dumps(info, indent=2))
     return info

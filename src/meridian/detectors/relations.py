@@ -23,31 +23,51 @@ LINK_TYPES = ("address", "phone", "domain", "sponsor", "approver", "owner", "ins
 IDENTITY_TYPES = ("address", "phone", "domain", "owner")
 
 
+# The meta-path behind each relation type: two vendors share an item when their
+# instances of the meta-path end on the same node.
+METAPATHS = {
+    "address": ("LOCATED_AT",),                                  # vendor -> address
+    "contact": ("HAS_CONTACT",),                                 # vendor -> phone / email domain
+    "sponsor": ("CONTRACTED_UNDER", "SPONSORED_BY"),             # vendor -> engagement -> employee
+    "approver": ("CONTRACTED_UNDER", "APPROVED_BY"),             # vendor -> engagement -> employee (financial)
+    "category": ("CONTRACTED_UNDER", "FOR_SERVICE"),             # vendor -> engagement -> category (unambiguous)
+    "institution": (("SERVES", "SITE_OF", "AFFILIATED_WITH"),),  # vendor -> institution
+    # owner: vendor -> registry entity <- (OWNS|CONTROLS)* <- owner, a variable-length
+    # upward walk evaluated over each vendor's history (see ownership.OwnershipView)
+}
+
+
 def entity_items(ctx: Context, use_ownership: bool | None = None) -> dict[str, dict[str, set]]:
-    """type -> item -> set of entities."""
+    """type -> item (the shared end node) -> set of vendor entities, from graph meta-paths."""
+    from ..graph_ops import hetero, strip
+
     use_ownership = ctx.use_ownership if use_ownership is None else use_ownership
+    hg = hetero(ctx)
     ent = ctx.entity_of
     items: dict[str, dict[str, set]] = {t: defaultdict(set) for t in LINK_TYPES + ("category",)}
 
-    for r in ctx.addresses.itertuples():
-        items["address"][r.addr_key].add(ent[r.record_id])
-    for r in ctx.contacts.itertuples():
-        if isinstance(r.phone_key, str):
-            items["phone"][r.phone_key].add(ent[r.record_id])
-        if isinstance(r.domain_key, str):
-            items["domain"][r.domain_key].add(ent[r.record_id])
-    e = ctx.engagements
-    for r in e.dropna(subset=["sponsor_employee_id"]).itertuples():
-        items["sponsor"][r.sponsor_employee_id].add(ent[r.record_id])
-    for rec, cats in e.groupby("record_id")["cat_primary"]:
-        for c in cats.dropna().unique():
-            items["category"][c].add(ent[rec])
-    ap = ctx.approvals
-    fin = ap[(ap["approval_type"] == "financial") & ap["approver_employee_id"].notna()]
-    for r in fin.itertuples():
-        items["approver"][r.approver_employee_id].add(ent[r.record_id])
-    for r in ctx.links.itertuples():
-        items["institution"][r.institution_id].add(ent[r.record_id])
+    def fill(kind, mp, order, key=strip):
+        mp = mp.sort_values(order, kind="stable")
+        k = max(int(c[1:]) for c in mp.columns if c[0] == "n" and c[1:].isdigit())
+        for start, end in zip(mp["n0"], mp[f"n{k}"]):
+            items[kind][key(end)].add(ent[strip(start)])
+
+    loc = hg.metapath(*METAPATHS["address"]).copy()
+    loc["raw"] = [p.get("raw_address") for p in loc["props1"]]
+    fill("address", loc, ["n0", "valid_from1", "observed_at1", "raw"],
+         key=lambda n: n[len("address:"):])
+    con = hg.metapath(*METAPATHS["contact"])
+    fill("phone", con[con["n1"].str.startswith("phone:")], ["n0"])
+    fill("domain", con[con["n1"].str.startswith("domain:")], ["n0"])
+    fill("sponsor", hg.metapath(*METAPATHS["sponsor"]), ["n1"])
+    certain = {2: lambda e: e["resolution_confidence"] == 1.0}
+    cat = hg.metapath(*METAPATHS["category"], where=certain).sort_values(["n0", "n1"], kind="stable")
+    for start, grp in cat.groupby("n0", sort=True):
+        for c in pd.unique(grp["n2"]):
+            items["category"][strip(c)].add(ent[strip(start)])
+    financial = {2: lambda e: [p.get("approval_type") == "financial" for p in e["props"]]}
+    fill("approver", hg.metapath(*METAPATHS["approver"], where=financial), ["source_record_id2"])
+    fill("institution", hg.metapath(*METAPATHS["institution"]), ["source_record_id1"])
     if use_ownership:
         from .ownership import _view
         ov = _view(ctx)

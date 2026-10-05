@@ -6,6 +6,11 @@ Biopharma extract, from the relationships between them: shared addresses and con
 and approvers, timing, institution links and beneficial ownership. The output is a ranked list of
 review cases in the sponsor's submission format, each with traceable evidence.
 
+The source tables are first turned into one time-aware heterogeneous graph (vendors, addresses,
+contacts, engagements, employees, institutions, registry entities and persons, with typed and
+dated edges). Detection then reads only that graph: each detector looks for a pattern of typed
+paths (meta-paths) and cites the graph edges behind every case.
+
 ## Quick start
 
 Python 3.12.
@@ -24,8 +29,8 @@ meridian-exp all                           # all experiments -> reports/experime
 Each run writes to `artifacts/runs/<timestamp>/` (or `--out <dir>`):
 - `submission.csv` in the template format, and `ranked_cases.csv` with extra columns;
 - `cases/`: analyst case packages for the top 10 cases (`--packages N` to change);
-- `graph/`: the canonical heterogeneous graph behind the run (`nodes.parquet`, `edges.parquet`) and
-  `graph.json` with its content hash and counts;
+- `graph/`: the heterogeneous graph the detectors ran on (`nodes.parquet`, `edges.parquet`,
+  `activity.parquet` with monthly payments per engagement) and `graph.json` with its content hash;
 - `cases.jsonl` (evidence per case), `checks.md` (data checks) and the entity-resolution lists;
 - `run.json`: config, input hashes, versions and local scores.
 
@@ -42,9 +47,12 @@ src/meridian/
   data.py                    loading, registry parsing, as_of(t)
   checks.py                  data checks (contract, keys, dates, Dossier Appendix B tests)
   resolution.py              normalisation, registry matching, duplicate records
-  context.py                 per-time-point views shared by detectors (entities, categories, ownership paths)
-  graph.py                   canonical heterogeneous graph: typed node and edge tables, content hash
-  detectors/                 one module per family of typologies, policy.py, open_set.py, record.py
+  graph.py                   builds the heterogeneous graph: typed node and edge tables, activity, content hash
+  graph_views.py             the tables detectors read, rebuilt from the graph (round-trip tested)
+  graph_ops.py               typed edges and meta-path instances over the graph
+  context.py                 per-time-point views shared by detectors, built from the graph
+  detectors/                 one module per family of typologies, policy.py, open_set.py, record.py;
+                             evidence.py looks up the edges each finding cites
   cases.py                   merging candidates into cases, emergence and active periods
   ranking.py                 calibration, type interleaving, tag selection, submission table
   calibrate.py               detector hit rates from labels (evaluation side only)

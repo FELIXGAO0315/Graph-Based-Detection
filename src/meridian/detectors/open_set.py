@@ -22,6 +22,7 @@ import pandas as pd
 
 from ..context import Context
 from .base import OPEN_SET_TAG, Candidate
+from .evidence import address_edges, engagement_edges, identity_edges, shared_item_edges
 from .relations import IDENTITY_TYPES, LINK_TYPES, entity_items, idf
 
 
@@ -99,6 +100,7 @@ def detect_rare_sharing(ctx: Context) -> list[Candidate]:
                     + ", ".join(f"{t} {cov:.0%}" for t, (cov, _, _) in sorted(covered.items()))),
             evidence={"shared": {t: {"item": k, "coverage": c, "holders": n} for t, (c, k, n) in covered.items()}},
             benign=benign, features={"rarity": rarity, "n_types": len(covered), "n_identity": len(identity)},
+            edges=tuple(shared_item_edges(ctx, {t: k for t, (_, k, _) in covered.items()}, members)),
         ))
     return out
 
@@ -147,6 +149,10 @@ def detect_change_points(ctx: Context) -> list[Candidate]:
                     reason=f"within {days} days from {d.date()} the vendor changed {', '.join(sorted(kinds))}",
                     evidence={"events": w.assign(date=w["date"].astype(str)).to_dict("records")},
                     benign=benign, features={"n_kinds": len(kinds)},
+                    edges=tuple(address_edges(ctx, [rec], d, d + pd.Timedelta(days=days)) + engagement_edges(
+                        ctx, ctx.engagements.loc[(ctx.engagements["record_id"] == rec)
+                                                 & ctx.engagements["start_date"].between(d, d + pd.Timedelta(days=days)),
+                                                 "engagement_id"])),
                 ))
                 break
     return out
@@ -170,6 +176,7 @@ def detect_duplicate_paid(ctx: Context) -> list[Candidate]:
                     f"{', '.join(sorted(set(ctx.identity_pairs[ctx.identity_pairs['record_a'].isin(recs)]['reason'])))}) "
                     f"were paid in the same {len(both)} month(s), first {both.index.min().date()}"),
             evidence={"months": [str(m.date()) for m in both.index]}, features={"n_months": len(both)},
+            edges=tuple(identity_edges(ctx, recs)),
         ))
     return out
 

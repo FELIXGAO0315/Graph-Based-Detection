@@ -196,30 +196,27 @@ def embedding_comparison(bundle, base, truth, scfg, seeds=(0, 1, 2)) -> tuple[pd
 
 
 # ---------------------------------------------------------------------------
-def ablate(bundle, relation: str):
-    """Remove one relation type from the input, keeping table shapes."""
-    if relation == "address":
-        return replace(bundle, tp_address_history=bundle.tp_address_history.iloc[0:0])
-    if relation == "contact":
-        return replace(bundle, third_parties=bundle.third_parties.assign(phone=None, email_domain=None))
-    if relation == "sponsor":
-        return replace(bundle, tp_engagements=bundle.tp_engagements.assign(sponsor_employee_id=None))
-    if relation == "approver":
-        return replace(bundle, tp_engagement_approvals=bundle.tp_engagement_approvals.assign(approver_employee_id=None))
-    if relation == "institution":
-        return replace(bundle, tp_institution_links=bundle.tp_institution_links.iloc[0:0])
-    if relation == "payments":
-        return replace(bundle, tp_payments_monthly=bundle.tp_payments_monthly.iloc[0:0])
-    raise ValueError(relation)
+# Relation ablation removes edge types from the canonical graph before detection.
+# Entity resolution, which built the graph, is left as it is, so each row measures
+# what detection gains from that relation.
+ABLATION_GROUPS = {
+    "address (LOCATED_AT)": ["LOCATED_AT"],
+    "contact (HAS_CONTACT)": ["HAS_CONTACT"],
+    "sponsor (SPONSORED_BY)": ["SPONSORED_BY"],
+    "approver (APPROVED_BY)": ["APPROVED_BY"],
+    "institution (SERVES, SITE_OF, AFFILIATED_WITH)": ["SERVES", "SITE_OF", "AFFILIATED_WITH"],
+    "ownership (REGISTERED_AS, IS_PERSON, OWNS, CONTROLS, CONSOLIDATED_BY)":
+        ["REGISTERED_AS", "IS_PERSON", "OWNS", "CONTROLS", "CONSOLIDATED_BY"],
+}
 
 
 def ablation(bundle, base, truth, scfg) -> pd.DataFrame:
     full = run_eval(bundle, base, truth, scfg)
     rows = [{"removed": "(none)", **full}]
-    for rel in ["address", "contact", "sponsor", "approver", "institution", "payments"]:
-        rows.append({"removed": rel, **run_eval(ablate(bundle, rel), base, truth, scfg)})
-    rows.append({"removed": "ownership (registry R)",
-                 **run_eval(bundle, _cfg(base, **{"features.ownership": False}), truth, scfg)})
+    for name, rels in ABLATION_GROUPS.items():
+        rows.append({"removed": name, **run_eval(bundle, _cfg(base, **{"graph.drop_relations": rels}), truth, scfg)})
+    rows.append({"removed": "payments (activity on engagements)",
+                 **run_eval(bundle, _cfg(base, **{"graph.drop_activity": True}), truth, scfg)})
     df = pd.DataFrame(rows)
     for k in ["AP", "R@50", "macro_tag_recall"]:
         df[f"d_{k}"] = df[k] - full[k]
@@ -389,7 +386,7 @@ def main(argv=None):
         if HAVE_TORCH:
             todo.append("embedding")
         else:
-            print("torch/torch_geometric not installed: skipping the step-9 embedding comparison")
+            print("torch/torch_geometric not installed: skipping the embedding comparison")
     for name in todo:
         if name == "ladder":
             df = ladder_full(bundle, base, truth, scfg)

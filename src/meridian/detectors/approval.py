@@ -13,6 +13,7 @@ from scipy.stats import binom
 
 from ..context import Context
 from .base import Candidate
+from .evidence import approval_edges, engagement_edges
 
 
 def detect(ctx: Context) -> list[Candidate]:
@@ -80,5 +81,7 @@ def detect(ctx: Context) -> list[Candidate]:
             benign=benign,
             features={"pair_n": n, "sponsor_share": share, "eligible": eligible, "surprise": surprise,
                       "under": n_under, "out_of_role": n_oor},
+            edges=tuple(engagement_edges(ctx, sorted(set(g["engagement_id"]) | set(unapproved["engagement_id"])))
+                        + approval_edges(ctx, sorted(set(g["engagement_id"])), approver=a)),
         ))
     return out

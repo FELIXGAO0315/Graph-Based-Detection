@@ -72,11 +72,17 @@ def _calibration(cases, cfg: dict):
 
 
 def pipeline(cfg: dict, bundle=None):
-    """Run detection end to end. Returns (submission, cases, candidates, context, checks)."""
+    """Run detection end to end. Returns (submission, cases, candidates, context, checks).
+
+    Source tables -> as_of(t) view -> normalisation and entity resolution -> canonical
+    heterogeneous graph -> detectors. Detectors read only the graph (plus reference
+    tables); `ctx.graph` is the graph they ran on.
+    """
     b = bundle if bundle is not None else load_bundle(ROOT / cfg["bundle"])
     checks = run_checks(b)
     view = as_of(b, cfg["snapshot"])
-    ctx = Context(view, cfg)
+    gcfg = cfg.get("graph", {})
+    ctx = Context.for_detection(view, cfg, gcfg.get("drop_relations", ()), gcfg.get("drop_activity", False))
     cands = run_detectors(ctx, cfg.get("detectors", "all"), cfg.get("exclude_detectors", ()))
     if not cfg.get("ranking", {}).get("include_policy", True):
         from .detectors.base import POLICY_TAG
@@ -127,7 +133,7 @@ def main(argv=None):
                 "members": sorted(c.members), "tags": list(c.tags), "score": c.score,
                 "emerged_at": c.emerged_at.date().isoformat() if c.emerged_at is not None else None,
                 "detectors": list(c.detectors), "reason": c.reason, "benign": c.benign,
-                "calibrated": c.calibrated, "benign_factor": c.benign_factor,
+                "calibrated": c.calibrated, "benign_factor": c.benign_factor, "edges": list(c.edges),
                 "evidence": [cd.evidence for cd in c.candidates + c.support],
             }, default=str) + "\n")
 
@@ -142,8 +148,8 @@ def main(argv=None):
     print(f"candidates={len(cands)} cases={len(cases)} submitted={len(sub)} runtime={runtime:.1f}s -> {out}")
 
     # The canonical heterogeneous graph behind this run, with its content hash.
-    from .graph import build_graph, export, validate
-    g = build_graph(ctx)
+    from .graph import export, validate
+    g = ctx.graph
     meta["graph"] = export(g, out / "graph")
     problems = validate(g)
     meta["graph"]["problems"] = problems
