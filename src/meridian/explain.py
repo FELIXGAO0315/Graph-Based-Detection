@@ -259,7 +259,8 @@ def case_package(ctx: Context, case: Case, rank: int, meta: dict) -> str:
         f"# Case {rank}: {' | '.join(select_tags(case))}",
         (f"Snapshot {meta['snapshot']} · run `{meta['run']}` · graph `{meta.get('graph_hash', 'n/a')}` · "
          f"config `{meta['config_hash']}` · commit `{meta['git_commit']}`  \n"
-         f"Ranking score {case.calibrated:.3f} (a review priority, not a probability) · emerged {_fmt_date(case.emerged_at)} · "
+         f"Ranking score {case.effective:.3f} (case score {case.calibrated:.3f} before type interleaving; a review "
+         f"priority, not a probability) · emerged {_fmt_date(case.emerged_at)} · "
          f"detectors: {', '.join(case.detectors)}"),
         "## Members", members_table(ctx, case),
         f"All tags raised by the evidence: {', '.join(case.tags)}",
@@ -286,7 +287,7 @@ def write_packages(ctx: Context, ordered: list[Case], out_dir: Path, meta: dict,
     for rank, case in enumerate(ordered[:top], start=1):
         name = f"case_{rank:03d}.md"
         (out_dir / name).write_text(case_package(ctx, case, rank, meta))
-        index.append(f"| [{rank}]({name}) | {', '.join(select_tags(case))} | {len(case.members)} | {case.calibrated:.3f} | "
+        index.append(f"| [{rank}]({name}) | {', '.join(select_tags(case))} | {len(case.members)} | {case.effective:.3f} | "
                      f"{_fmt_date(case.emerged_at)} | {', '.join(case.detectors)} | {len(case.benign)} |")
     (out_dir / "README.md").write_text("\n".join(index) + "\n")
     return out_dir

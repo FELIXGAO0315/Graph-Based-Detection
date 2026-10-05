@@ -20,6 +20,9 @@ class Case:
     benign_factor: float = 1.0
     rank: int | None = None                        # position in the submitted list, None if cut
     tag_scores: dict = field(default_factory=dict)  # tag -> strongest calibrated evidence for it
+    effective: float = 0.0                         # score that set the rank (after type decay and penalties)
+    lead_detector: str = ""                        # detector whose evidence scores highest
+    lead_raw_score: float = 0.0                    # that detector's own raw score (its own scale)
 
     @property
     def lead(self) -> Candidate:

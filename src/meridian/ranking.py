@@ -58,6 +58,9 @@ def calibrate_cases(cases: list[Case], hit_rates: dict | None = None, prior: flo
                 per_det[c.detector] = (v, w)
         vals = sorted(per_det.values(), reverse=True)
         best, best_w = vals[0]
+        lead = max((c for c in case.candidates if c.detector in per_det and per_det[c.detector][0] == best),
+                   key=lambda c: c.score)
+        case.lead_detector, case.lead_raw_score = lead.detector, float(lead.score)
         noisy_or = 1 - float(np.prod([1 - v for v, _ in vals]))
         case.calibrated = best + corroboration * (noisy_or - best)
         case.benign_factor = best_w
@@ -67,6 +70,8 @@ def order(cases: list[Case], interleave: bool = True, decay: float = 0.85, dup_p
           dup_days: int = 365, contained: float = 0.6, max_cases: int | None = None) -> list[Case]:
     remaining = sorted(cases, key=lambda c: (-c.calibrated, sorted(c.members)))
     if not interleave:
+        for c in remaining:
+            c.effective = c.calibrated
         return remaining[:max_cases] if max_cases else remaining
     chosen: list[Case] = []
     tag_count: dict[str, int] = {}
@@ -84,6 +89,7 @@ def order(cases: list[Case], interleave: bool = True, decay: float = 0.85, dup_p
             if v > best_v:
                 best_i, best_v = i, v
         c = remaining.pop(best_i)
+        c.effective = best_v
         chosen.append(c)
         tag_count[c.primary_tag] = tag_count.get(c.primary_tag, 0) + 1
     return chosen
@@ -102,23 +108,47 @@ def select_tags(case: Case, ratio: float = 0.85) -> tuple:
     return tuple(typed or keep)
 
 
+def short_reason(case: Case, max_items: int = 3, max_len: int = 300) -> str:
+    """A one-line reason for the submission: the first clause of the strongest candidates' reasons.
+    The full reasons stay in ranked_cases.csv and the case packages."""
+    seen, parts = set(), []
+    for c in sorted(case.candidates, key=lambda c: c.detector != case.lead_detector):
+        if c.detector in seen:
+            continue
+        seen.add(c.detector)
+        parts.append(c.reason.split(";")[0].strip())
+        if len(parts) == max_items:
+            break
+    text = "; ".join(parts)
+    if case.benign:
+        text += f"; {len(case.benign)} benign explanation(s) to check"
+    return text if len(text) <= max_len else text[: max_len - 3].rstrip() + "..."
+
+
 def to_submission(ordered: list[Case], tag_ratio: float = 0.85) -> pd.DataFrame:
+    """Submission rows. `score` is the effective score that set the rank, so it never
+    increases down the list; `case_score` is the case's own score before type
+    interleaving and the duplicate penalty."""
     rows = []
     for i, c in enumerate(ordered, start=1):
         rows.append({
             "case_rank": i,
             "member_record_ids": "|".join(sorted(c.members)),
             "typology_tags": "|".join(select_tags(c, tag_ratio)),
+            "score": round(float(c.effective), 4),
+            "reason_codes": short_reason(c),
+            "case_score": round(float(c.calibrated), 4),
             "all_tags": "|".join(c.tags),
-            "score": round(float(c.calibrated), 4),
-            "reason_codes": c.reason,
             "detectors": "|".join(c.detectors),
+            "lead_detector": c.lead_detector,
+            "lead_raw_score": round(c.lead_raw_score, 3),
             "emerged_at": c.emerged_at.date().isoformat() if c.emerged_at is not None else "",
-            "raw_score": round(float(c.score), 3),
             "benign_factor": round(c.benign_factor, 3),
+            "reason_full": c.reason,
         })
-    return pd.DataFrame(rows, columns=SUBMISSION_COLUMNS + ["all_tags", "detectors", "emerged_at", "raw_score",
-                                                            "benign_factor"])
+    return pd.DataFrame(rows, columns=SUBMISSION_COLUMNS + [
+        "case_score", "all_tags", "detectors", "lead_detector", "lead_raw_score", "emerged_at", "benign_factor",
+        "reason_full"])
 
 
 def rank(cases: list[Case], cfg: dict | None = None, hit_rates: dict | None = None,
