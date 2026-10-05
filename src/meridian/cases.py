@@ -45,8 +45,8 @@ class Case:
 
     @property
     def edges(self) -> tuple:
-        """Graph edges behind the case: the union of its candidates' evidence edges."""
-        return tuple(dict.fromkeys(e for c in self.candidates + self.support for e in c.edges))
+        """Graph edges behind the case: the union of its candidates' evidence edges, by edge id."""
+        return tuple(sorted({e for c in self.candidates + self.support for e in c.edges}))
 
     @property
     def benign(self) -> list:
@@ -130,18 +130,31 @@ def assemble(cands: list[Candidate], merge_iou: float = 0.8, union_iou: float = 
     """
     pct = _percentiles(cands)
     cases: list[Case] = []
+    # Only cases that share a record with a candidate can take it: index cases by
+    # the records of their candidates (open-set candidates may reach past the members).
+    by_rec: dict[str, set] = {}
+
+    def near(c: Candidate) -> list[int]:
+        return sorted(set().union(*(by_rec.get(m, ()) for m in c.members)))
+
+    def add(i: int, c: Candidate) -> None:
+        for m in c.members:
+            by_rec.setdefault(m, set()).add(i)
+
     # Timed candidates first, so timeless ones only attach to cases whose time frame is already set.
     for c in sorted(cands, key=lambda c: (c.timeless, -pct[id(c)], -c.score, c.detector, sorted(c.members))):
         if c.timeless:
-            hosts = [k for k in cases if _iou(k.members, c.members) >= merge_iou]
+            hosts = [i for i in near(c) if _iou(cases[i].members, c.members) >= merge_iou]
             if hosts:
-                host = max(hosts, key=lambda k: _iou(k.members, c.members)) if best_match else hosts[0]
-                host.candidates.append(c)
-                host.tags = tuple(dict.fromkeys(host.tags + c.tags))
+                h = max(hosts, key=lambda i: _iou(cases[i].members, c.members)) if best_match else hosts[0]
+                cases[h].candidates.append(c)
+                cases[h].tags = tuple(dict.fromkeys(cases[h].tags + c.tags))
+                add(h, c)
                 continue
         grows = open_set_grows or OPEN_SET_TAG not in c.tags
         target, target_iou, target_union = None, -1.0, False
-        for case in cases:
+        for i in near(c):
+            case = cases[i]
             if not _concurrent(case, c, merge_days):
                 continue
             iou = _iou(case.members, c.members)
@@ -154,24 +167,32 @@ def assemble(cands: list[Candidate], merge_iou: float = 0.8, union_iou: float = 
                 x.members & c.members and _edge_share(x, c) >= evidence_union for x in case.candidates)
             union = c.detector not in {x.detector for x in case.candidates} and (groups or same_structure)
             if (iou >= merge_iou or union) and iou > target_iou:
-                target, target_iou, target_union = case, iou, union and iou < merge_iou
+                target, target_iou, target_union = i, iou, union and iou < merge_iou
                 if not best_match:
                     break
         if target is None:
             cases.append(Case(members=c.members, tags=c.tags, score=c.score,
                               emerged_at=c.emerged_at, candidates=[c]))
+            add(len(cases) - 1, c)
             continue
-        target.candidates.append(c)
+        case = cases[target]
+        case.candidates.append(c)
+        add(target, c)
         if target_union and grows:
-            target.members = target.members | c.members
-        target.tags = tuple(dict.fromkeys(target.tags + c.tags))
-        target.score = max(target.score, c.score)
-        if c.emerged_at is not None and (target.emerged_at is None or c.emerged_at < target.emerged_at):
-            target.emerged_at = c.emerged_at
+            case.members = case.members | c.members
+        case.tags = tuple(dict.fromkeys(case.tags + c.tags))
+        case.score = max(case.score, c.score)
+        if c.emerged_at is not None and (case.emerged_at is None or c.emerged_at < case.emerged_at):
+            case.emerged_at = c.emerged_at
+    cand_by_rec: dict[str, list] = {}
+    for j, c in enumerate(cands):
+        for m in c.members:
+            cand_by_rec.setdefault(m, []).append(j)
     for case in cases:
         if len(case.members) < 2:
             continue
-        for c in cands:
+        for j in sorted(set().union(*(cand_by_rec.get(m, ()) for m in case.members))):
+            c = cands[j]
             if (c.members < case.members and c not in case.candidates and not c.benign and pct[id(c)] >= 0.5
                     and _close(case.emerged_at, c.emerged_at, support_days)):
                 case.support.append(c)

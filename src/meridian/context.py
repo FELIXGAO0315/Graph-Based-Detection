@@ -10,6 +10,7 @@ Derived views are computed lazily and cached, so detectors only pay for what the
 """
 from __future__ import annotations
 
+import bisect
 from collections import defaultdict
 from functools import cached_property
 
@@ -365,15 +366,25 @@ class Context:
         structure as it stood then, as far as it was published by t.
         """
         at = self.t if at is None else pd.Timestamp(at)
+        # The valid set only changes on a start or end date, so dates between two
+        # consecutive change dates share one result.
+        changes = self._interest_changes
+        epoch = bisect.bisect_right(changes, at) - 1
+        key = changes[epoch] if epoch >= 0 else None
         cache = self.__dict__.setdefault("_owners_cache", {})
-        if at not in cache:
+        if key not in cache:
+            ref = at if key is None else key
             out = defaultdict(list)
             for r in self._interest_rows:
                 s, e = r["start_date"], r["end_date"]
-                if (pd.isna(s) or s <= at) and (pd.isna(e) or e > at):
+                if (pd.isna(s) or s <= ref) and (pd.isna(e) or e > ref):
                     out[r["subject_sid"]].append(r)
-            cache[at] = out
-        return cache[at]
+            cache[key] = out
+        return cache[key]
+
+    @cached_property
+    def _interest_changes(self) -> list:
+        return sorted({d for r in self._interest_rows for d in (r["start_date"], r["end_date"]) if pd.notna(d)})
 
     def ownership_paths(self, sid: str, at=None, max_depth: int = 12) -> list[list[dict]]:
         """All upward chains from an entity to a person, a chain stop, or a dead end.

@@ -24,6 +24,7 @@ meridian --set features.ownership=false    # ownership layer off
 meridian --set window='["2025-07-01","2026-06-30"]'   # keep only cases emerging in the test period
 pytest                                     # time, resolution, scorer, pipeline (and embedding) checks
 meridian-exp all                           # all experiments -> reports/experiments/
+meridian-exp scale                         # run time on 20 copies of the data
 ```
 
 Each run writes to `artifacts/runs/<timestamp>/` (or `--out <dir>`):
@@ -60,7 +61,7 @@ src/meridian/
   explain.py                 analyst case packages
   features.py                explicit record and case features for the ladder
   embeddings.py              optional: heterogeneous GraphSAGE embeddings
-  experiments.py             ladder, ablation, stability, open-set and embedding experiments (meridian-exp)
+  experiments.py             ladder, ablation, stability, open-set, embedding and scale experiments (meridian-exp)
   run.py                     command-line entry point (meridian)
 tests/                       pytest checks
 reports/results.md           current results, findings and design decisions

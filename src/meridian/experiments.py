@@ -1,6 +1,7 @@
-"""Experiments: representation ladder, relation ablation, stability, leave one type out, embeddings.
+"""Experiments: representation ladder, relation ablation, stability, leave one type out, embeddings, scale.
 
-    meridian-exp ladder | fixed | ablation | stability | perturb | loto | embedding | all  [--out reports/experiments]
+    meridian-exp ladder | fixed | ablation | stability | perturb | loto | embedding | scale | all
+                 [--out reports/experiments] [--copies 20]
 
 Two ladder experiments are reported separately:
   ladder  complete pipeline: each level runs only the detectors it is allowed to use
@@ -13,6 +14,8 @@ from __future__ import annotations
 
 import argparse
 import copy
+import re
+import time
 from dataclasses import replace
 from pathlib import Path
 
@@ -24,7 +27,7 @@ from sklearn.metrics import average_precision_score
 from sklearn.preprocessing import StandardScaler
 
 from .cases import assemble
-from .data import load_bundle
+from .data import as_of, canonical, load_bundle
 from .run import ROOT, load_config, pipeline
 from .scorer import ScorerConfig, load_labels, overlap, prepare_submission, score
 
@@ -284,6 +287,104 @@ def _typo(s: str, rng) -> str:
     return s[:i] + s[i + 1:] if op == 0 else (s[:i] + c + s[i + 1:] if op == 1 else s[:i] + c + s[i:])
 
 
+# ---------------------------------------------------------------------------
+# Scale: the starter data replicated k times as independent copies
+_ID_COLUMNS = {"record_id", "tax_id", "lei", "registry_no", "engagement_id", "sponsor_employee_id", "approval_id",
+               "approver_employee_id", "link_id", "institution_id", "employee_id", "delegation_id",
+               "from_employee_id", "to_employee_id", "child_lei", "parent_lei", "statement_id", "reg_record_id",
+               "subject_sid", "party_sid"}
+_NAME_COLUMNS = {"legal_name", "declared_parent_group", "name", "full_name", "child_legal_name", "parent_legal_name"}
+_REFERENCE_TABLES = {"markets", "paying_entities", "service_categories", "approval_policy_matrix", "fmv_rate_cards",
+                     "country_risk_context", "business_events"}
+_EXTENSION = re.compile(r"^(.*?)(\s*(?:x|ext\.?)\s*\d+)?$", re.I)
+
+
+def _copy_table(df: pd.DataFrame, i: int) -> pd.DataFrame:
+    """Copy i of a business table, with every identifier, name, address and contact made distinct."""
+    if i == 0:
+        return df
+    df = df.copy()
+    for c in df.columns:
+        if df[c].dtype != object:
+            continue
+        m = df[c].notna()
+        v = df.loc[m, c].astype(str)
+        if c in _ID_COLUMNS:
+            df.loc[m, c] = v + f"R{i:02d}"
+        elif c in _NAME_COLUMNS:
+            df.loc[m, c] = v + f" Copy{i:02d}"
+        elif c == "raw_address":
+            df.loc[m, c] = v + f", Building {i:02d}"
+        elif c == "phone":  # before any extension, which phone normalisation drops
+            df.loc[m, c] = [_EXTENSION.sub(lambda g: g.group(1) + f"{i:02d}" + (g.group(2) or ""), p) for p in v]
+        elif c == "email_domain":
+            df.loc[m, c] = f"r{i:02d}-" + v
+    return df
+
+
+def replicate(bundle, copies: int):
+    """The bundle replicated `copies` times as independent copies sharing only the reference tables."""
+    return replace(bundle, **{name: canonical(name, pd.concat([_copy_table(df, i) for i in range(copies)],
+                                                              ignore_index=True))
+                              for name, df in bundle.tables().items() if name not in _REFERENCE_TABLES})
+
+
+def _timed_run(bundle, cfg: dict) -> tuple[dict, dict, dict]:
+    """Seconds per stage, candidates per detector and graph size for one pipeline run."""
+    from .context import Context
+    from .detectors import DETECTORS, OPEN_SET_DETECTORS
+    from .graph import build_graph
+    from .ranking import rank
+    secs, n = {}, {}
+    t = time.perf_counter()
+    view = as_of(bundle, cfg["snapshot"])
+    graph = build_graph(Context(view, cfg))
+    secs["entity resolution and graph"] = time.perf_counter() - t
+    t = time.perf_counter()
+    ctx = Context.from_graph(graph, view, cfg)
+    secs["graph views"] = time.perf_counter() - t
+    cands = []
+    for name, fn in {**DETECTORS, **OPEN_SET_DETECTORS}.items():
+        t = time.perf_counter()
+        out = fn(ctx)
+        secs[f"detector {name}"] = time.perf_counter() - t
+        cands += out
+    for c in cands:
+        n[c.detector] = n.get(c.detector, 0) + 1
+    t = time.perf_counter()
+    cases = assemble(cands, **cfg.get("cases", {}))
+    secs["case assembly"] = time.perf_counter() - t
+    t = time.perf_counter()
+    rank(cases, cfg.get("ranking", {}))
+    secs["ranking"] = time.perf_counter() - t
+    size = {"vendor records": len(bundle.third_parties), "graph nodes": len(graph.nodes),
+            "graph edges": len(graph.edges), "candidates": len(cands), "cases": len(cases)}
+    return secs, n, size
+
+
+def scale(bundle, base, copies: int = 20) -> pd.DataFrame:
+    """Run time and detector output on the starter data and on `copies` independent copies of it.
+
+    If the pipeline scales, every count per copy matches the single copy and run time
+    grows about linearly. Per-copy counts that differ show where a detector depends on
+    the size of the data (for example a fixed community resolution or a peer pool that
+    grows with the data)."""
+    rows = []
+    s1, n1, z1 = _timed_run(bundle, base)
+    sk, nk, zk = _timed_run(replicate(bundle, copies), base)
+    k = f"{copies} copies"
+    for m in z1:
+        rows.append({"measure": m, "1 copy": f"{z1[m]:,}", k: f"{zk[m]:,}", "per copy": f"{zk[m] / copies:,.1f}"})
+    for d in sorted(set(n1) | set(nk)):
+        rows.append({"measure": f"candidates: {d}", "1 copy": str(n1.get(d, 0)), k: str(nk.get(d, 0)),
+                     "per copy": f"{nk.get(d, 0) / copies:.2f}"})
+    s1["total"], sk["total"] = sum(s1.values()), sum(sk.values())
+    for m in sorted(s1, key=lambda m: (m == "total", -sk[m])):
+        rows.append({"measure": f"seconds: {m}", "1 copy": f"{s1[m]:.1f}", k: f"{sk[m]:.1f}",
+                     "per copy": f"{sk[m] / copies:.2f}"})
+    return pd.DataFrame(rows)
+
+
 def perturb(bundle, base, truth, scfg, seeds=(0, 1, 2)) -> pd.DataFrame:
     rows = []
     for seed in seeds:
@@ -370,7 +471,8 @@ def to_md(df: pd.DataFrame, floatfmt: int = 3) -> str:
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("experiment", choices=["ladder", "fixed", "ablation", "stability", "perturb", "loto", "embedding",
-                                           "all"])
+                                           "scale", "all"])
+    ap.add_argument("--copies", type=int, default=20, help="copies of the data for the scale experiment")
     ap.add_argument("--config", default=str(ROOT / "configs" / "default.yaml"))
     ap.add_argument("--out", default=str(ROOT / "reports" / "experiments"))
     a = ap.parse_args(argv)
@@ -404,6 +506,8 @@ def main(argv=None):
             print(f"== link prediction (training check only)\n{to_md(lp)}\n")
         elif name == "loto":
             df = leave_one_type_out(bundle, base, truth, scfg)
+        elif name == "scale":
+            df = scale(bundle, base, a.copies)
         (out / f"{name}.csv").write_text(df.to_csv(index=not isinstance(df.index, pd.RangeIndex)))
         (out / f"{name}.md").write_text(to_md(df))
         print(f"== {name}\n{to_md(df)}\n")

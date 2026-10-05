@@ -177,7 +177,7 @@ def detect_layered(ctx: Context) -> list[Candidate]:
             evidence={"path": ov.path_text(rec, longest), "as_of": best["at"], "layers": best["layers"],
                       "jurisdictions": sorted(best["jurisdictions"]),
                       "offshore": {s: _jurisdiction_note(ov.node(s)["jurisdiction"])
-                                   for s in best["sink"] | best["conduit"]}},
+                                   for s in sorted(best["sink"] | best["conduit"])}},
             benign=benign, uses_ownership=True,
             features={"layers": best["layers"], "n_jur": len(best["jurisdictions"]), "trust": best["trust"]},
             edges=tuple(path_edges(ctx, rec, best["paths"])),
@@ -212,6 +212,17 @@ def _name_similarity(names: list[str]) -> float:
     return float(np.mean(sims)) if sims else 0.0
 
 
+def _rows_of(ctx: Context, name: str, frame: pd.DataFrame, records) -> pd.DataFrame:
+    """frame[frame.record_id.isin(records)] through a per-context index (same rows, same order)."""
+    cache = ctx.__dict__.setdefault("_rows_by_record", {})
+    if name not in cache:
+        idx = defaultdict(list)
+        for i, r in enumerate(frame["record_id"]):
+            idx[r].append(i)
+        cache[name] = idx
+    return frame.iloc[sorted(i for r in set(records) for i in cache[name].get(r, ()))]
+
+
 def _operational_links(ctx: Context, records: set) -> dict:
     """Shared addresses, sponsors and contacts among member entities.
 
@@ -225,15 +236,15 @@ def _operational_links(ctx: Context, records: set) -> dict:
 
     def add(kind, frame, key_col, date_col):
         for key, g in frame.groupby(key_col):
-            first = g.assign(e=g["record_id"].map(ent)).groupby("e")[date_col].min().sort_values()
+            first = g.assign(e=[ent.get(r) for r in g["record_id"]]).groupby("e")[date_col].min().sort_values()
             if len(first) >= 2:
                 rel[kind].append((key, frozenset(first.index), first.iloc[1]))
 
-    a = ctx.addresses[ctx.addresses["record_id"].isin(recs)]
+    a = _rows_of(ctx, "addresses", ctx.addresses, recs)
     add("address", a, "addr_key", "valid_from")
-    e = ctx.engagements[ctx.engagements["record_id"].isin(recs)].dropna(subset=["sponsor_employee_id"])
+    e = _rows_of(ctx, "engagements", ctx.engagements, recs).dropna(subset=["sponsor_employee_id"])
     add("sponsor", e, "sponsor_employee_id", "start_date")
-    c = ctx.contacts[ctx.contacts["record_id"].isin(recs)].merge(
+    c = _rows_of(ctx, "contacts", ctx.contacts, recs).merge(
         ctx.vendors[["record_id", "onboarding_date"]].reset_index(drop=True), on="record_id")
     add("phone", c.dropna(subset=["phone_key"]), "phone_key", "onboarding_date")
     add("domain", c.dropna(subset=["domain_key"]), "domain_key", "onboarding_date")

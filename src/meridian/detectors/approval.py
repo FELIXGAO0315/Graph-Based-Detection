@@ -27,6 +27,8 @@ def detect(ctx: Context) -> list[Candidate]:
         fin["ap_valid_to"].notna() & (fin["approval_date"] > fin["ap_valid_to"]))
     known = fin[fin["approver_employee_id"].notna()]
     eng_s = known.groupby("sponsor_employee_id")["engagement_id"].nunique()
+    by_market = {m: g for m, g in known.groupby("market")}
+    eng_by_sponsor = {s: g for s, g in ctx.engagements.groupby("sponsor_employee_id")}
 
     out = []
     pairs = known.groupby(["sponsor_employee_id", "approver_employee_id"])
@@ -39,7 +41,11 @@ def detect(ctx: Context) -> list[Candidate]:
         if share < min_share:
             continue
         mkts = set(g["market"])
-        pool = known[known["market"].isin(mkts) & (known["sponsor_employee_id"] != s)]
+        parts = [by_market[m] for m in mkts if m in by_market]
+        if any(pd.isna(m) for m in mkts):
+            parts.append(known[known["market"].isna()])
+        pool = pd.concat(parts)
+        pool = pool[pool["sponsor_employee_id"] != s]
         lo, hi = g["approval_date"].min(), g["approval_date"].max()
         period = pool[(pool["approval_date"] >= lo) & (pool["approval_date"] <= hi)]
         eligible = period[period["ap_approver_level"] >= g["required_approver_level"].min()][
@@ -53,7 +59,7 @@ def detect(ctx: Context) -> list[Candidate]:
         n_oor = int(g["out_of_role"].sum())
 
         # The sponsor's engagements with no recorded financial approver may belong to the same pair.
-        s_all = ctx.engagements[ctx.engagements["sponsor_employee_id"] == s]
+        s_all = eng_by_sponsor.get(s, ctx.engagements.iloc[0:0])
         unapproved = s_all[~s_all["engagement_id"].isin(known["engagement_id"])]
         members = ctx.expand(set(g["record_id"]) | set(unapproved["record_id"]))
         dates = np.sort(g["approval_date"].to_numpy())

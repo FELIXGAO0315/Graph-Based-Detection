@@ -135,7 +135,7 @@ def main(argv=None):
                 "detectors": list(c.detectors), "reason": c.reason, "benign": c.benign,
                 "calibrated": c.calibrated, "benign_factor": c.benign_factor, "edges": list(c.edges),
                 "evidence": [cd.evidence for cd in c.candidates + c.support],
-            }, default=str) + "\n")
+            }, default=str, sort_keys=True) + "\n")
 
     meta = {
         "version": __version__, "git_commit": _git_commit(), "config": cfg,

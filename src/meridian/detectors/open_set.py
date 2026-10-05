@@ -51,11 +51,17 @@ def detect_rare_sharing(ctx: Context) -> list[Candidate]:
     """Groups from Louvain at several resolutions, scored by rare shared items.
 
     Resolutions are fixed by the community sizes they produce (from market-level
-    blobs to groups of a few vendors), not by labels. A group is kept when at
-    least two relation types each have one item held by most members; the score
-    sums those items' rarity, weighting identity relations higher.
+    blobs to groups of a few vendors), not by labels. They are stated per
+    `resolution_unit` vendor entities and scaled by the graph's size: at a fixed
+    resolution, modularity merges ever larger communities as the graph grows
+    (its null model divides by the total edge weight), so the same setting
+    would find no small groups on a dataset 20 times larger. A group is kept
+    when at least two relation types each have one item held by most members;
+    the score sums those items' rarity, weighting identity relations higher.
     """
-    resolutions = ctx.param("open_set", "resolutions", [3, 10, 30])
+    unit = ctx.param("open_set", "resolution_unit", 1000)
+    total = len(set(ctx.entity_of.values()))
+    resolutions = [r * max(1.0, total / unit) for r in ctx.param("open_set", "resolutions", [3, 10, 30])]
     min_size = ctx.param("open_set", "min_size", 3)
     max_size = ctx.param("open_set", "max_size", 15)
     min_cover = ctx.param("open_set", "min_cover", 0.6)
@@ -64,7 +70,6 @@ def detect_rare_sharing(ctx: Context) -> list[Candidate]:
     if g.number_of_edges() == 0:
         return []
     items = entity_items(ctx)
-    total = len(set(ctx.entity_of.values()))
     onb = ctx.vendors.assign(e=ctx.vendors["record_id"].map(ctx.entity_of)).groupby("e")["onboarding_date"].max()
     groups: list[frozenset] = []
     for res in resolutions:
@@ -72,12 +77,18 @@ def detect_rare_sharing(ctx: Context) -> list[Candidate]:
             core = frozenset(nx.k_core(g.subgraph(comm), 2).nodes) if len(comm) > 2 else frozenset(comm)
             if min_size <= len(core) <= max_size and all(len(core & x) / len(core | x) < 0.8 for x in groups):
                 groups.append(core)
+    held: dict = defaultdict(set)   # entity -> (type, item) it holds
+    for t in LINK_TYPES:
+        for key, es in items.get(t, {}).items():
+            for e in es:
+                held[e].add((t, key))
     out = []
     for nodes in groups:
         covered = {}
+        mine = set().union(*(held.get(e, ()) for e in nodes))
         for t in LINK_TYPES:
-            best = max(((len(es & nodes) / len(nodes), key, len(es)) for key, es in items.get(t, {}).items()
-                        if len(es & nodes) >= 2), default=None)
+            best = max(((len(es & nodes) / len(nodes), key, len(es)) for key, es in
+                        ((k, items[t][k]) for tt, k in mine if tt == t) if len(es & nodes) >= 2), default=None)
             if best and best[0] >= min_cover:
                 covered[t] = best
         # Single-type groups were tried (one rare identity item held by 3+ vendors): on the

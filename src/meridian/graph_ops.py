@@ -39,12 +39,22 @@ class HeteroGraph:
         e["props"] = [json.loads(p) for p in e["relation_properties"]]
         return {rel: df.reset_index(drop=True) for rel, df in e.groupby("relation_type", sort=True)}
 
+    @cached_property
+    def _edges_cache(self) -> dict:
+        return {}
+
     def edges(self, *relations: str) -> pd.DataFrame:
-        """Edges of the given relation types (all columns, dates parsed, props as dicts)."""
-        parts = [self._by_relation[r] for r in relations if r in self._by_relation]
-        if not parts:
-            return self.g.edges.iloc[0:0].assign(props=[])
-        return pd.concat(parts, ignore_index=True) if len(parts) > 1 else parts[0]
+        """Edges of the given relation types (all columns, dates parsed, props as dicts).
+
+        The frame is shared between callers: do not modify it."""
+        if relations not in self._edges_cache:
+            parts = [self._by_relation[r] for r in relations if r in self._by_relation]
+            if not parts:
+                out = self.g.edges.iloc[0:0].assign(props=[])
+            else:
+                out = pd.concat(parts, ignore_index=True) if len(parts) > 1 else parts[0]
+            self._edges_cache[relations] = out
+        return self._edges_cache[relations]
 
     @cached_property
     def _path_cache(self) -> dict:

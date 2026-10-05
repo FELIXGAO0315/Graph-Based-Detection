@@ -108,6 +108,10 @@ def detect_rapid_onboarding(ctx: Context) -> list[Candidate]:
     onb = entity_onboarding(ctx)
     country = entity_country(ctx)
     link = {k: v for k, v in pairs.items() if any(t in v for t in STRUCTURAL_LINKS)}
+    adj: dict[str, set] = {}
+    for a, b in link:
+        adj.setdefault(a, set()).add(b)
+        adj.setdefault(b, set()).add(a)
     found = []
     for mkt, es in country.groupby(country):
         d = onb[es.index].sort_values()
@@ -117,12 +121,11 @@ def detect_rapid_onboarding(ctx: Context) -> list[Candidate]:
             if j - i < min_linked:
                 continue
             win = list(d.index[i:j])
+            pos = {e: p for p, e in enumerate(win)}
             g = nx.Graph()
             for a_i, a in enumerate(win):
-                for b in win[a_i + 1:]:
-                    key = (a, b) if a < b else (b, a)
-                    if key in link:
-                        g.add_edge(a, b)
+                for b_i in sorted(pos[b] for b in adj.get(a, ()) if pos.get(b, -1) > a_i):
+                    g.add_edge(a, win[b_i])
             comps = [c for c in nx.connected_components(g) if len(c) >= min_linked]
             for comp in comps:
                 lo = d.iloc[i]
@@ -138,7 +141,7 @@ def detect_rapid_onboarding(ctx: Context) -> list[Candidate]:
         kept.append(f)
     out = []
     for mkt, comp, lo, hi, n_win, expected in kept:
-        types = Counter(t for a in comp for b in comp if a < b and (a, b) in link
+        types = Counter(t for a in sorted(comp) for b in sorted(comp) if a < b and (a, b) in link
                         for t in link[(a, b)] if t in STRUCTURAL_LINKS)
         ratio = len(comp) / max(expected, 0.5)
         members = _records(ctx, comp)

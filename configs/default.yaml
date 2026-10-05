@@ -63,5 +63,5 @@ params:
   layered: {min_layers: 4}
   ownership_change: {window_days: 90, min_signals: 2}
   fmv: {band_map: {}}
-  open_set: {resolutions: [3, 10, 30], min_size: 3, max_size: 15, min_cover: 0.6, min_types: 2,
+  open_set: {resolutions: [3, 10, 30], resolution_unit: 1000, min_size: 3, max_size: 15, min_cover: 0.6, min_types: 2,
              change_window_days: 90, min_change_kinds: 3, outlier_top_share: 0.02}

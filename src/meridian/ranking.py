@@ -107,25 +107,30 @@ def order(cases: list[Case], interleave: bool = True, decay: float = 0.85, dup_p
         for c in remaining:
             c.effective = c.calibrated
         return remaining[:max_cases] if max_cases else remaining
+    def duplicates(c: Case, s: Case) -> bool:
+        # Near-duplicates and fragments of a chosen case add little for a reviewer
+        # (and cannot match a second planted case under one-to-one matching).
+        return ((_iou(c.members, s.members) >= 0.5 or len(c.members & s.members) >= contained * len(c.members)) and
+                (c.emerged_at is None or s.emerged_at is None or abs((c.emerged_at - s.emerged_at).days) <= dup_days))
+
     chosen: list[Case] = []
     tag_count: dict[str, int] = {}
+    dup = [False] * len(remaining)   # duplicates some chosen case (updated as cases are chosen)
     limit = max_cases or len(remaining)
     while remaining and len(chosen) < limit:
         best_i, best_v = 0, -1.0
         for i, c in enumerate(remaining):
             v = c.calibrated * decay ** tag_count.get(c.primary_tag, 0)
-            # Near-duplicates and fragments of a chosen case add little for a reviewer
-            # (and cannot match a second planted case under one-to-one matching).
-            if any((_iou(c.members, s.members) >= 0.5 or len(c.members & s.members) >= contained * len(c.members)) and
-                   (c.emerged_at is None or s.emerged_at is None or abs((c.emerged_at - s.emerged_at).days) <= dup_days)
-                   for s in chosen):
+            if dup[i]:
                 v *= dup_penalty
             if v > best_v:
                 best_i, best_v = i, v
         c = remaining.pop(best_i)
+        dup.pop(best_i)
         c.effective = best_v
         chosen.append(c)
         tag_count[c.primary_tag] = tag_count.get(c.primary_tag, 0) + 1
+        dup = [d or duplicates(r, c) for d, r in zip(dup, remaining)]
     return chosen
 
 

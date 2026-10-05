@@ -24,6 +24,21 @@ def _index(ctx: Context, name: str, build):
     return ctx.__dict__[key]
 
 
+def _positions(ctx: Context, name: str, keys) -> dict:
+    """key -> row positions (in table order), built once per context."""
+    def build():
+        idx = defaultdict(list)
+        for i, k in enumerate(keys()):
+            idx[k].append(i)
+        return idx
+    return _index(ctx, name, build)
+
+
+def _rows(idx: dict, keys) -> np.ndarray:
+    """Row positions of all `keys`, in table order."""
+    return np.array(sorted(i for k in set(keys) for i in idx.get(k, ())), dtype=int)
+
+
 def item_edges(ctx: Context, kind: str, item, records) -> list[str]:
     """Edges of the meta-path instances that link `records` to a shared item of type `kind`."""
     if kind == "owner":
@@ -31,9 +46,9 @@ def item_edges(ctx: Context, kind: str, item, records) -> list[str]:
     steps = METAPATHS["contact" if kind in ("phone", "domain") else kind]
     mp = hetero(ctx).metapath(*steps)
     k = len(steps)
-    end = _END_PREFIX[kind] + str(item)
-    starts = {f"vendor:{r}" for r in records}
-    hit = mp[(mp[f"n{k}"] == end) & mp["n0"].isin(starts)]
+    by_end = _positions(ctx, f"end_{'_'.join(map(str, steps))}", lambda: mp[f"n{k}"])
+    hit = mp.iloc[_rows(by_end, [_END_PREFIX[kind] + str(item)])]
+    hit = hit[hit["n0"].isin({f"vendor:{r}" for r in records})]
     if kind == "approver":
         hit = hit[[p.get("approval_type") == "financial" for p in hit["props2"]]]
     return [e for i in range(1, k + 1) for e in hit[f"e{i}"]]
@@ -56,11 +71,11 @@ def engagement_edges(ctx: Context, engagement_ids, relations=("CONTRACTED_UNDER"
 def approval_edges(ctx: Context, engagement_ids, approver: str | None = None) -> list[str]:
     """Financial approval edges on the given engagements (optionally by one approver)."""
     e = hetero(ctx).edges("APPROVED_BY")
-    ids = {f"engagement:{x}" for x in engagement_ids}
-    keep = e["source_node_id"].isin(ids) & np.array([p.get("approval_type") == "financial" for p in e["props"]],
-                                                     dtype=bool)
+    idx = _positions(ctx, "approved_by", lambda: e["source_node_id"])
+    e = e.iloc[_rows(idx, (f"engagement:{x}" for x in engagement_ids))]
+    keep = np.array([p.get("approval_type") == "financial" for p in e["props"]], dtype=bool)
     if approver is not None:
-        keep &= e["target_node_id"] == f"employee:{approver}"
+        keep &= (e["target_node_id"] == f"employee:{approver}").to_numpy()
     return list(e.loc[keep, "edge_id"])
 
 
@@ -79,9 +94,9 @@ def statement_edges(ctx: Context, statement_ids) -> list[str]:
 def registration_edges(ctx: Context, records) -> list[str]:
     """Accepted links from vendor records to registry entities or persons."""
     e = hetero(ctx).edges("REGISTERED_AS", "IS_PERSON")
-    keep = e["source_node_id"].isin({f"vendor:{r}" for r in records}) & np.array(
-        [p.get("status") == "accepted" for p in e["props"]], dtype=bool)
-    return list(e.loc[keep, "edge_id"])
+    idx = _positions(ctx, "registration", lambda: e["source_node_id"])
+    e = e.iloc[_rows(idx, (f"vendor:{r}" for r in records))]
+    return list(e.loc[np.array([p.get("status") == "accepted" for p in e["props"]], dtype=bool), "edge_id"])
 
 
 def path_edges(ctx: Context, record: str, paths) -> list[str]:
