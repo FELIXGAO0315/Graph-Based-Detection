@@ -49,16 +49,17 @@ ranking:
   contained: 0.5         # ...or when half its members already sit in a chosen case (a 2-vendor case sharing one)
   include_policy: true   # single-record policy findings (scored separately by the sponsor)
 
-# Detector parameters. Label descriptions ("5x", "two months") are starting points only.
+# Detector parameters. Ratio thresholds (*_quantile) are quantiles of each dataset's own peer
+# distribution; the others are fixed rules (see "Thresholds" in reports/results.md).
 params:
   shared_address: {min_entities: 3}
-  sponsor: {window_days: 60, min_new: 4, min_ratio: 3.0}
+  sponsor: {window_days: 60, min_new: 4, ratio_quantile: 0.95}
   approval: {min_pair: 5, min_sponsor_share: 0.5, min_eligible: 3}
   dense_cluster: {min_pair_types: 4, min_size: 4, min_cover: 0.8, min_covered_types: 4}
   rapid_onboarding: {window_days: 14, min_linked: 4}
   bridge: {min_foreign_links: 2}
-  geography: {window_days: 365, min_new: 4, min_ratio: 3.0}
-  activity: {min_spike_ratio: 2.5, min_vendors: 3, post_termination_min_months: 1}
+  geography: {window_days: 365, min_new: 4, ratio_quantile: 0.90}
+  activity: {spike_quantile: 0.85, min_vendors: 3, post_termination_min_months: 1}
   common_owner: {min_entities: 2}
   layered: {min_layers: 4}
   ownership_change: {window_days: 90, min_signals: 2}

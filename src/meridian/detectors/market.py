@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from ..context import Context
-from .base import Candidate
+from .base import Candidate, tail_threshold
 from .evidence import engagement_edges, link_edges
 
 BENIGN_BRIDGE_PARENTS = {"RND", "SCM"}  # CROs, logistics: cross-border by design
@@ -57,29 +57,28 @@ def detect_bridge(ctx: Context) -> list[Candidate]:
 def detect_geography(ctx: Context) -> list[Candidate]:
     days = ctx.param("geography", "window_days", 365)
     min_new = ctx.param("geography", "min_new", 4)
-    min_ratio = ctx.param("geography", "min_ratio", 3.0)
     e = ctx.engagements.copy()
     e = e[e["cat_flags_possible"].map(lambda f: "int" in f)]
     e["entity"] = e["record_id"].map(ctx.entity_of)
     e["vendor_country"] = e["record_id"].map(ctx.vendors["country"])
     first = e.sort_values("start_date").groupby("entity", as_index=False).first()
-    found = []
+    # Every window (a market's new intermediaries within `days` of each first engagement)
+    # against the market's earlier yearly rate; the threshold is a quantile of these ratios.
+    windows = []
     for mkt, g in first.groupby("vendor_country"):
         d = g.sort_values("start_date").reset_index(drop=True)
         dates = d["start_date"].to_numpy()
         for i in range(len(d)):
             j = np.searchsorted(dates, dates[i] + np.timedelta64(days, "D"), side="right")
             n_new = j - i
-            if n_new < min_new:
-                continue
             lo = d.loc[i, "start_date"]
             prior = d[d["start_date"] < lo]
             years = max((lo - prior["start_date"].min()).days / 365.0, 1.0) if len(prior) else 1.0
             baseline = len(prior) / years
-            ratio = n_new / max(baseline, 1.0)
-            if ratio < min_ratio:
-                continue
-            found.append((mkt, i, j, lo, n_new, len(prior), baseline, ratio, d))
+            windows.append((mkt, i, j, lo, n_new, len(prior), baseline, n_new / max(baseline, 1.0), d))
+    min_ratio = tail_threshold([w[7] for w in windows], ctx.param("geography", "ratio_quantile", None),
+                               ctx.param("geography", "min_ratio", 3.0))
+    found = [w for w in windows if w[4] >= min_new and w[7] >= min_ratio]
     # Keep the strongest window per market.
     best = {}
     for f in found:
@@ -104,10 +103,11 @@ def detect_geography(ctx: Context) -> list[Candidate]:
             emerged_at=pd.Timestamp(d["start_date"].iloc[i + min_new - 1]), active_until=win["start_date"].max(),
             detector="geography",
             reason=(f"{n_new} new intermediaries ({', '.join(sorted(set(cats)))}) in {mkt} within {days} days from "
-                    f"{lo.date()} on top of {n_prior} earlier (baseline {baseline:.1f}/yr, {ratio:.1f}x); "
+                    f"{lo.date()} on top of {n_prior} earlier (baseline {baseline:.1f}/yr, {ratio:.1f}x, "
+                    f"threshold {min_ratio:.1f}x); "
                     f"CPI tier {cpi_tier}; {sp_share:.0%} under one sponsor; int flag certain for {certain:.0%}"),
             evidence={"market": mkt, "window_start": lo, "engagements": list(win["engagement_id"]),
-                      "cpi_tier": cpi_tier, "baseline_per_year": baseline},
+                      "cpi_tier": cpi_tier, "baseline_per_year": baseline, "ratio_threshold": min_ratio},
             benign=benign, features={"n_new": n_new, "ratio": ratio, "cpi_tier": cpi_tier, "sponsor_share": sp_share},
             edges=tuple(engagement_edges(ctx, win["engagement_id"],
                                          ("CONTRACTED_UNDER", "SPONSORED_BY", "FOR_SERVICE"))),

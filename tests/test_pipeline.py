@@ -93,3 +93,9 @@ def test_results_do_not_depend_on_source_row_order(bundle, run):
     cfg = load_config(ROOT / "configs" / "default.yaml")
     cols = ["case_rank", "member_record_ids", "typology_tags", "score"]
     pd.testing.assert_frame_equal(pipeline(cfg, shuffled)[0][cols], run[0][cols])
+
+
+def test_pipeline_runs_with_a_relation_family_removed(bundle):
+    cfg = load_config(ROOT / "configs" / "default.yaml", ['graph.drop_relations=["SPONSORED_BY"]'])
+    sub, cases, cands, ctx, _ = pipeline(cfg, bundle)
+    assert len(sub) > 0 and not any(c.detector == "sponsor_concentration" for c in cands)

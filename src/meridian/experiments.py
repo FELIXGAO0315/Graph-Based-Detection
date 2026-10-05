@@ -228,11 +228,21 @@ def ablation(bundle, base, truth, scfg) -> pd.DataFrame:
 
 # ---------------------------------------------------------------------------
 THRESHOLD_PARAMS = {
-    "shared_address.min_entities": 3, "sponsor.min_new": 4, "sponsor.min_ratio": 3.0, "approval.min_pair": 5,
+    "shared_address.min_entities": 3, "sponsor.min_new": 4, "sponsor.ratio_quantile": 0.95, "approval.min_pair": 5,
     "approval.min_sponsor_share": 0.5, "dense_cluster.min_covered_types": 4, "rapid_onboarding.min_linked": 4,
-    "geography.min_new": 4, "geography.min_ratio": 3.0, "activity.min_spike_ratio": 2.5,
+    "geography.min_new": 4, "geography.ratio_quantile": 0.9, "activity.spike_quantile": 0.85,
     "ownership_change.min_signals": 2, "layered.min_layers": 4,
 }
+QUANTILES = (0.8, 0.85, 0.9, 0.95, 0.975, 0.99)
+
+
+def _scaled(key: str, v, factor: float):
+    """A threshold scaled by `factor` (<1 looser, >1 stricter). For a quantile threshold the
+    tail share is divided by the factor, so the direction matches the fixed thresholds."""
+    if key.endswith("_quantile"):
+        return round(1 - (1 - v) / factor, 4)
+    nv = v * factor
+    return int(round(nv)) if isinstance(v, int) else nv
 
 
 def stability(bundle, base, truth) -> pd.DataFrame:
@@ -243,20 +253,24 @@ def stability(bundle, base, truth) -> pd.DataFrame:
             rows.append({"experiment": "scorer threshold", "setting": f"{meas}>={th}", **run_eval(bundle, base, truth, s)})
     scfg = ScorerConfig(**base.get("scorer", {}))
     for factor in (0.75, 1.25):
-        over = {}
-        for key, v in THRESHOLD_PARAMS.items():
-            nv = v * factor
-            over[f"params.{key}"] = int(round(nv)) if isinstance(v, int) else nv
+        over = {f"params.{key}": _scaled(key, v, factor) for key, v in THRESHOLD_PARAMS.items()}
         rows.append({"experiment": "all detector thresholds", "setting": f"x{factor}",
                      **run_eval(bundle, _cfg(base, **over), truth, scfg)})
     for key, v in THRESHOLD_PARAMS.items():
         for factor in (0.75, 1.25):
-            nv = v * factor
-            nv = int(round(nv)) if isinstance(v, int) else nv
+            nv = _scaled(key, v, factor)
             if nv == v:
                 continue
             rows.append({"experiment": "one threshold", "setting": f"{key}={nv}",
                          **run_eval(bundle, _cfg(base, **{f"params.{key}": nv}), truth, scfg)})
+    # Thresholds set as quantiles of each dataset's own peer distribution: sweep the quantile.
+    for key, v in THRESHOLD_PARAMS.items():
+        if not key.endswith("_quantile"):
+            continue
+        for q in QUANTILES:
+            if q != v:
+                rows.append({"experiment": "threshold quantile", "setting": f"{key}={q}",
+                             **run_eval(bundle, _cfg(base, **{f"params.{key}": q}), truth, scfg)})
     for name, over in {"strict: identifiers only": {"resolution.name_merge": "none", "resolution.registry_name_match": False},
                        "default": {},
                        "loose: names alone, accept ambiguous": {"resolution.name_merge": "any",

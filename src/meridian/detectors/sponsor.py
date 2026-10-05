@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from ..context import Context
-from .base import Candidate
+from .base import Candidate, tail_threshold
 
 CENTRAL_ROLES = {"category_manager", "procurement_ss", "system_default"}
 
@@ -47,7 +47,6 @@ def first_reach(dates: np.ndarray, days: int, k: int):
 def detect(ctx: Context) -> list[Candidate]:
     days = ctx.param("sponsor", "window_days", 60)
     min_new = ctx.param("sponsor", "min_new", 4)
-    min_ratio = ctx.param("sponsor", "min_ratio", 3.0)
     fe = first_engagements(ctx)
 
     stats = []
@@ -58,14 +57,32 @@ def detect(ctx: Context) -> list[Candidate]:
         stats.append({"sponsor": sp, "max_new": n, "win": d.iloc[i:i + n], "dates": dates,
                       "role": ctx.role_of.get(sp), "n_total": len(d)})
     st = pd.DataFrame(stats)
+    if st.empty:
+        return []
+    # Each sponsor's densest window against the median of its role peers (all sponsors
+    # when the role has fewer than 5 others); the threshold is a quantile of these ratios.
+    overall = float(st["max_new"].median())
+    by_role = {role: np.sort(g.to_numpy()) for role, g in st.groupby("role")["max_new"]}
+    memo: dict = {}
+    peer = []
+    for role, n in zip(st["role"], st["max_new"]):
+        vals = by_role.get(role) if pd.notna(role) else None
+        if vals is None or len(vals) - 1 < 5:
+            peer.append((overall, "all sponsors (role group < 5)"))
+            continue
+        if (role, n) not in memo:  # median of the role's other sponsors
+            memo[(role, n)] = float(np.median(np.delete(vals, np.searchsorted(vals, n))))
+        peer.append((memo[(role, n)], f"role {role} (n={len(vals) - 1})"))
+    st["peer_med"] = [m for m, _ in peer]
+    st["peer_def"] = [d for _, d in peer]
+    st["ratio"] = st["max_new"] / st["peer_med"].clip(lower=1.0)
+    min_ratio = tail_threshold(st["ratio"], ctx.param("sponsor", "ratio_quantile", None),
+                               ctx.param("sponsor", "min_ratio", 3.0))
     out = []
     for r in st.itertuples():
         if r.max_new < min_new:
             continue
-        peers = st[(st["role"] == r.role) & (st["sponsor"] != r.sponsor)]["max_new"]
-        peer_med = float(peers.median()) if len(peers) >= 5 else float(st["max_new"].median())
-        peer_def = f"role {r.role} (n={len(peers)})" if len(peers) >= 5 else "all sponsors (role group < 5)"
-        ratio = r.max_new / max(peer_med, 1.0)
+        peer_med, peer_def, ratio = r.peer_med, r.peer_def, r.ratio
         if ratio < min_ratio:
             continue
         win = r.win
@@ -93,8 +110,9 @@ def detect(ctx: Context) -> list[Candidate]:
             emerged_at=emerged, active_until=hi, detector="sponsor_concentration",
             reason=(f"{r.role} {r.sponsor} ({role_row['home_market']}) took on {r.max_new} new vendors within "
                     f"{days} days ({lo.date()}–{hi.date()}), {ratio:.1f}x the peer median of {peer_med:g} "
-                    f"for {peer_def}; top category {top_cat} ({cat_share:.0%})"),
+                    f"for {peer_def} (threshold {min_ratio:.1f}x); top category {top_cat} ({cat_share:.0%})"),
             evidence={"sponsor": r.sponsor, "role": r.role, "window": (lo, hi), "peer_median": peer_med,
+                      "ratio_threshold": min_ratio,
                       "peer_definition": peer_def, "engagements": list(win["engagement_id"])},
             benign=benign,
             features={"max_new": r.max_new, "ratio": ratio, "cat_share": cat_share},

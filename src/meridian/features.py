@@ -176,7 +176,7 @@ class CaseFeaturizer:
     @cached_property
     def spikes(self) -> pd.DataFrame:
         from .detectors.activity import spend_spikes
-        return spend_spikes(self.ctx, 2.5)
+        return spend_spikes(self.ctx)
 
     @cached_property
     def ownership(self):

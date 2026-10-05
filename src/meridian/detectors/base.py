@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+import numpy as np
 import pandas as pd
 
 # The 14 tags used by the starter labels. Fixed vocabulary.
@@ -29,6 +30,17 @@ OWNERSHIP_TAGS = frozenset({
 # Tags for single-record policy findings, which the dossier scores separately.
 POLICY_TAG = "POLICY_VIOLATION"
 OPEN_SET_TAG = "OPEN_SET"
+
+
+def tail_threshold(values, quantile: float | None, fixed: float) -> float:
+    """Threshold from a peer distribution: its `quantile`, so values at or above it
+    form the upper tail of this dataset's own distribution. With quantile None, or no
+    values, the `fixed` threshold applies."""
+    v = np.asarray(values, dtype=float)
+    v = v[np.isfinite(v)]
+    if quantile is None or len(v) == 0:
+        return float(fixed)
+    return float(np.quantile(v, quantile))
 
 
 @dataclass

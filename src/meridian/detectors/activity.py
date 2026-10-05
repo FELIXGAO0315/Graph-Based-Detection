@@ -5,14 +5,18 @@ import numpy as np
 import pandas as pd
 
 from ..context import Context
-from .base import Candidate
+from .base import Candidate, tail_threshold
 from .evidence import engagement_edges
 
-def spend_spikes(ctx: Context, min_ratio: float, half_window: int = 6, ramp_up: int = 3) -> pd.DataFrame:
-    """Months where a vendor's spend is at least `min_ratio` x its own local median
-    (the median of the surrounding +-half_window months, excluding the month itself),
-    and is the local maximum of that neighbourhood. The first `ramp_up` months of
-    a vendor's payment history are skipped: new vendors ramp up together."""
+
+def spend_peaks(ctx: Context, half_window: int = 6, ramp_up: int = 3) -> pd.DataFrame:
+    """Months where a vendor's spend is the maximum of its neighbourhood (+-half_window
+    months), with the ratio to its own local median (the median of the surrounding
+    months, excluding the month itself). The first `ramp_up` months of a vendor's
+    payment history are skipped: new vendors ramp up together."""
+    key = ("_spend_peaks", half_window, ramp_up)
+    if key in ctx.__dict__:
+        return ctx.__dict__[key]
     ms = ctx.monthly_spend.sort_values(["record_id", "month"])
     rows = []
     for rec, g in ms.groupby("record_id"):
@@ -31,15 +35,30 @@ def spend_spikes(ctx: Context, min_ratio: float, half_window: int = 6, ramp_up: 
             if len(nb) < 3:
                 continue
             med = np.median(nb)
-            if med > 0 and v >= min_ratio * med and v >= nb.max():
-                rows.append((rec, idx[k], v, v / med))
-    return pd.DataFrame(rows, columns=["record_id", "month", "amount", "ratio"])
+            if med > 0 and v >= nb.max():
+                rows.append((rec, idx[k], v, v / med, med))
+    out = pd.DataFrame(rows, columns=["record_id", "month", "amount", "ratio", "local_median"])
+    ctx.__dict__[key] = out
+    return out
+
+
+def spike_threshold(ctx: Context) -> float:
+    """Spike ratio threshold: the `spike_quantile` of all spend peaks' ratios in this
+    dataset (or the fixed `min_spike_ratio` when no quantile is set)."""
+    return tail_threshold(spend_peaks(ctx)["ratio"], ctx.param("activity", "spike_quantile", None),
+                          ctx.param("activity", "min_spike_ratio", 2.5))
+
+
+def spend_spikes(ctx: Context, min_ratio: float | None = None) -> pd.DataFrame:
+    """Spend peaks at least `min_ratio` x the vendor's local median (default: `spike_threshold`)."""
+    p = spend_peaks(ctx)
+    thr = spike_threshold(ctx) if min_ratio is None else min_ratio
+    return p.loc[p["amount"] >= thr * p["local_median"], ["record_id", "month", "amount", "ratio"]].reset_index(drop=True)
 
 
 def detect_sync_spikes(ctx: Context) -> list[Candidate]:
-    min_ratio = ctx.param("activity", "min_spike_ratio", 2.5)
     min_vendors = ctx.param("activity", "min_vendors", 3)
-    spikes = spend_spikes(ctx, min_ratio)
+    spikes = spend_spikes(ctx)
     if spikes.empty:
         return []
     eng = ctx.engagements.dropna(subset=["sponsor_employee_id"])
