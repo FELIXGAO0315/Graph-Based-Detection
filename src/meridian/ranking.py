@@ -101,7 +101,7 @@ def calibrate_cases(cases: list[Case], hit_rates: dict | None = None, prior: flo
 
 
 def order(cases: list[Case], interleave: bool = True, decay: float = 0.85, dup_penalty: float = 0.5,
-          dup_days: int = 365, contained: float = 0.6, max_cases: int | None = None) -> list[Case]:
+          dup_days: int = 365, contained: float = 0.5, max_cases: int | None = None) -> list[Case]:
     remaining = sorted(cases, key=lambda c: (-c.calibrated, sorted(c.members)))
     if not interleave:
         for c in remaining:
@@ -191,7 +191,7 @@ def rank(cases: list[Case], cfg: dict | None = None, hit_rates: dict | None = No
     calibrate_cases(cases, hit_rates, cfg.get("prior", DEFAULT_PRIOR), per_case, cfg.get("corroboration", 0.5),
                     cfg.get("detector_priors"), cfg.get("count_evidence_once", True), cfg.get("min_pool", 5))
     ordered = order(cases, interleave=cfg.get("interleave", True), decay=cfg.get("decay", 0.85),
-                    dup_penalty=cfg.get("dup_penalty", 0.5), contained=cfg.get("contained", 0.6),
+                    dup_penalty=cfg.get("dup_penalty", 0.5), contained=cfg.get("contained", 0.5),
                     max_cases=cfg.get("max_cases"))
     for c in cases:
         c.rank = None

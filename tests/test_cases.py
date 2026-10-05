@@ -39,6 +39,34 @@ def test_overlapping_groups_from_different_detectors_merge_into_the_union():
     assert len(cases) == 1 and cases[0].members == frozenset("ABCDE")
 
 
+def test_open_set_community_does_not_widen_a_typed_group():
+    address = cand(set("ABCDEF"), "SHARED_ADDRESS", "address", "2025-01-01")
+    community = cand(set("ABCDEFGH"), "OPEN_SET", "community", "2025-01-01")
+    cases = assemble([address, community])
+    assert len(cases) == 1 and cases[0].members == frozenset("ABCDEF") and len(cases[0].candidates) == 2
+
+
+def test_candidate_joins_the_best_matching_case():
+    first = cand(set("ABCDE"), "SPONSOR_CONCENTRATION", "x", "2025-01-01", score=3)
+    second = cand(set("ABCDF"), "SPONSOR_CONCENTRATION", "x", "2025-01-01", score=2)
+    other = cand(set("XY"), "SHARED_ADDRESS", "y", "2025-01-01", score=5)
+    late = cand(set("ABCDF"), "SHARED_ADDRESS", "y", "2025-01-01", score=1)
+    best = assemble([first, second, other, late])
+    host = next(k for k in best if late in k.candidates)
+    assert host.members == frozenset("ABCDF")
+    first_found = assemble([first, second, other, late], best_match=False)
+    assert next(k for k in first_found if late in k.candidates).members == frozenset("ABCDEF")
+
+
+def test_findings_on_the_same_structure_join_when_enabled():
+    layered = cand({"X"}, "LAYERED_COMPLEX_OWNERSHIP", "layered", "2026-01-01", score=2, edges=["e1", "e2", "e3", "e4"])
+    owner = cand({"X", "Y"}, "COMMON_BENEFICIAL_OWNER", "owner", "2026-02-27",
+                 edges=["e1", "e2", "e3", "e4", "e5", "e6"])
+    assert len(assemble([layered, owner])) == 2
+    cases = assemble([layered, owner], evidence_union=0.8)
+    assert len(cases) == 1 and cases[0].members == frozenset("XY")
+
+
 def test_shared_evidence_is_counted_once():
     def case_with(edges_b):
         a = cand({"A", "B"}, "COMMON_BENEFICIAL_OWNER", "owner", "2022-01-01", edges=["o1", "o2"])

@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 
-from .detectors.base import Candidate
+from .detectors.base import OPEN_SET_TAG, Candidate
 
 
 @dataclass
@@ -79,6 +79,14 @@ def _concurrent(case: "Case", c: Candidate, days: int) -> bool:
     return False
 
 
+def _edge_share(a: Candidate, b: Candidate) -> float:
+    """Share of the smaller evidence-edge set that both candidates cite."""
+    if not a.edges or not b.edges:
+        return 0.0
+    ea, eb = set(a.edges), set(b.edges)
+    return len(ea & eb) / min(len(ea), len(eb))
+
+
 def _percentiles(cands: list[Candidate]) -> dict[int, float]:
     by_det: dict[str, list] = {}
     for c in cands:
@@ -87,16 +95,27 @@ def _percentiles(cands: list[Candidate]) -> dict[int, float]:
 
 
 def assemble(cands: list[Candidate], merge_iou: float = 0.8, union_iou: float = 0.5, max_growth: float = 1.5,
-             merge_days: int = 365, support_days: int = 365) -> list[Case]:
+             merge_days: int = 365, support_days: int = 365, evidence_union: float | None = None,
+             best_match: bool = True, open_set_grows: bool = False) -> list[Case]:
     """Merge candidates that describe the same group at about the same time.
 
     Candidates are visited by within-detector percentile (raw scores are not
     comparable across detectors). A candidate joins an existing case when the
     emergence dates are within merge_days and either
       - IoU >= merge_iou: same members; the case keeps its boundary, or
-      - IoU >= union_iou, both are groups, and they come from different
-        detectors: the case takes the union of members. Planted multi-typology
-        cases are unions of what several relations show.
+      - it comes from a different detector than the case's candidates and
+        either both it and the case's lead are groups with IoU >= union_iou
+        (union within max_growth of the lead), or it overlaps one of the
+        case's candidates and shares at least `evidence_union` of the smaller
+        evidence-edge set with it (the same graph structure seen by two
+        detectors, e.g. a layered chain and the common owner at its top): the
+        case takes the union of members. Planted multi-typology cases are unions of what several
+        relations show.
+    Among the cases a candidate qualifies for it joins the one with the highest
+    member IoU (`best_match`), not the first one found.
+    Open-set candidates (communities, outliers) corroborate a case but never
+    add members to it: they have no typed pattern that defines the group, and
+    a community usually reaches past the group it overlaps.
     The time condition (`_concurrent`) keeps apart two patterns on the same
     vendor whose periods do not meet (on the starter data one vendor carries a
     layered-ownership case that ended when it was sold, and the ownership-change
@@ -114,11 +133,14 @@ def assemble(cands: list[Candidate], merge_iou: float = 0.8, union_iou: float = 
     # Timed candidates first, so timeless ones only attach to cases whose time frame is already set.
     for c in sorted(cands, key=lambda c: (c.timeless, -pct[id(c)], -c.score, c.detector, sorted(c.members))):
         if c.timeless:
-            host = next((k for k in cases if _iou(k.members, c.members) >= merge_iou), None)
-            if host is not None:
+            hosts = [k for k in cases if _iou(k.members, c.members) >= merge_iou]
+            if hosts:
+                host = max(hosts, key=lambda k: _iou(k.members, c.members)) if best_match else hosts[0]
                 host.candidates.append(c)
                 host.tags = tuple(dict.fromkeys(host.tags + c.tags))
                 continue
+        grows = open_set_grows or OPEN_SET_TAG not in c.tags
+        target, target_iou, target_union = None, -1.0, False
         for case in cases:
             if not _concurrent(case, c, merge_days):
                 continue
@@ -126,21 +148,26 @@ def assemble(cands: list[Candidate], merge_iou: float = 0.8, union_iou: float = 
             # Union is judged against the lead candidate and capped, so that groups
             # sharing one hub (a sponsor, an owner) do not chain into one big case.
             lead = case.lead.members
-            union = (_iou(lead, c.members) >= union_iou and len(c.members) > 1 and len(lead) > 1
-                     and len(case.members | c.members) <= max_growth * len(lead)
-                     and c.detector not in {x.detector for x in case.candidates})
-            if iou >= merge_iou or union:
-                case.candidates.append(c)
-                if union and iou < merge_iou:
-                    case.members = case.members | c.members
-                case.tags = tuple(dict.fromkeys(case.tags + c.tags))
-                case.score = max(case.score, c.score)
-                if c.emerged_at is not None and (case.emerged_at is None or c.emerged_at < case.emerged_at):
-                    case.emerged_at = c.emerged_at
-                break
-        else:
+            groups = (len(c.members) > 1 and len(lead) > 1 and _iou(lead, c.members) >= union_iou
+                      and len(case.members | c.members) <= max_growth * len(lead))
+            same_structure = evidence_union is not None and any(
+                x.members & c.members and _edge_share(x, c) >= evidence_union for x in case.candidates)
+            union = c.detector not in {x.detector for x in case.candidates} and (groups or same_structure)
+            if (iou >= merge_iou or union) and iou > target_iou:
+                target, target_iou, target_union = case, iou, union and iou < merge_iou
+                if not best_match:
+                    break
+        if target is None:
             cases.append(Case(members=c.members, tags=c.tags, score=c.score,
                               emerged_at=c.emerged_at, candidates=[c]))
+            continue
+        target.candidates.append(c)
+        if target_union and grows:
+            target.members = target.members | c.members
+        target.tags = tuple(dict.fromkeys(target.tags + c.tags))
+        target.score = max(target.score, c.score)
+        if c.emerged_at is not None and (target.emerged_at is None or c.emerged_at < target.emerged_at):
+            target.emerged_at = c.emerged_at
     for case in cases:
         if len(case.members) < 2:
             continue

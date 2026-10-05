@@ -22,8 +22,11 @@ cases:
   merge_iou: 0.8         # same members: merge, keep the boundary
   union_iou: 0.5         # overlapping groups from different detectors: merge into the union
   max_growth: 1.5        # ...as long as the union stays within 1.5x the lead candidate
+  evidence_union: null   # e.g. 0.8: ...or when they share this much of the smaller evidence-edge set
   merge_days: 365        # only when they emerged within this many days of each other
   support_days: 365
+  best_match: true       # join the qualifying case with the highest member IoU, not the first
+  open_set_grows: false  # open-set candidates corroborate a case but never add members
 
 ranking:
   max_cases: 100
@@ -43,7 +46,7 @@ ranking:
   tag_ratio: 0.85        # submit tags whose evidence is within this share of the strongest
   decay: 0.85            # effective score x decay^(cases already chosen with the same primary tag)
   dup_penalty: 0.5       # x this when a case nearly duplicates a chosen one (IoU >= 0.5)...
-  contained: 0.6         # ...or when this share of its members already sits in a chosen case
+  contained: 0.5         # ...or when half its members already sit in a chosen case (a 2-vendor case sharing one)
   include_policy: true   # single-record policy findings (scored separately by the sponsor)
 
 # Detector parameters. Label descriptions ("5x", "two months") are starting points only.
