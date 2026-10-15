@@ -3,3 +3,4 @@ __pycache__/
 .pytest_cache/
 artifacts/runs/
 artifacts/*.log
+reports/slides
