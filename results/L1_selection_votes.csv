@@ -1,0 +1,15 @@
+,lasso_logit,elastic_net_logit,adaptive_lasso_logit,l1_svm,votes
+country_cpi_tier,True,True,True,True,4
+region_US,True,True,True,True,4
+region_INTL,True,True,True,True,4
+country_cpi,True,True,False,True,3
+dd_overdue,True,True,False,True,3
+is_terminated,False,True,True,False,2
+share_commission_cash,False,True,True,False,2
+n_business_units,False,True,True,False,2
+q_public_official_interaction,True,True,False,False,2
+onboard_year,False,False,True,False,1
+onboarded_last_3y,False,False,True,False,1
+risk_rating_ord,False,True,False,False,1
+n_link_serves,False,False,True,False,1
+addr_coworking,False,False,True,False,1

@@ -1,0 +1,1764 @@
+[
+ {
+  "version": "full",
+  "seed": 0,
+  "period": "TRAINING_cv",
+  "fold": 0,
+  "n_vars": 5,
+  "variables": [
+   "addr_coworking",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 0,
+  "period": "TRAINING_cv",
+  "fold": 1,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 0,
+  "period": "TRAINING_cv",
+  "fold": 2,
+  "n_vars": 3,
+  "variables": [
+   "country_cpi_tier",
+   "n_link_serves",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 0,
+  "period": "TRAINING_cv",
+  "fold": 3,
+  "n_vars": 42,
+  "variables": [
+   "addr_changed_after_onboard",
+   "addr_coworking",
+   "addr_residential",
+   "addr_virtual_office",
+   "adverse_media",
+   "country_cpi",
+   "country_cpi_tier",
+   "country_sanctioned",
+   "cv_monthly_spend",
+   "dd_enhanced",
+   "dd_overdue",
+   "eng_late_record_days",
+   "expert_writer_translator",
+   "generic_email",
+   "has_declared_parent",
+   "has_lei",
+   "is_terminated",
+   "max_value_band",
+   "migrated_erp",
+   "n_business_units",
+   "n_distinct_approvers",
+   "n_eng_markets",
+   "n_exceeds_authority",
+   "n_inst_countries",
+   "n_link_serves",
+   "n_missing_compliance_review",
+   "n_service_rows",
+   "onboard_year",
+   "q_gov_ownership",
+   "region_EUROPE",
+   "remit_country_differs",
+   "screening_potential_match",
+   "share_commission_cash",
+   "share_contract_none",
+   "share_cross_border",
+   "share_eng_flag_gov",
+   "share_non_po",
+   "share_sponsor_missing",
+   "share_sponsor_system",
+   "svc_flag_flow",
+   "tenure_years",
+   "top3_month_share"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 0,
+  "period": "TRAINING_cv",
+  "fold": 4,
+  "n_vars": 3,
+  "variables": [
+   "country_cpi_tier",
+   "q_public_official_interaction",
+   "region_INTL"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 0,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 0,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 1,
+  "period": "TRAINING_cv",
+  "fold": 0,
+  "n_vars": 6,
+  "variables": [
+   "country_cpi_tier",
+   "dd_overdue",
+   "is_terminated",
+   "n_link_serves",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 1,
+  "period": "TRAINING_cv",
+  "fold": 1,
+  "n_vars": 1,
+  "variables": [
+   "country_cpi"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 1,
+  "period": "TRAINING_cv",
+  "fold": 2,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_exceeds_authority",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 1,
+  "period": "TRAINING_cv",
+  "fold": 3,
+  "n_vars": 8,
+  "variables": [
+   "addr_coworking",
+   "country_cpi_tier",
+   "dd_overdue",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "remit_country_differs",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 1,
+  "period": "TRAINING_cv",
+  "fold": 4,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi_tier",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 1,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 10,
+  "variables": [
+   "addr_coworking",
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "onboard_year",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 1,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 10,
+  "variables": [
+   "addr_coworking",
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "onboard_year",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 2,
+  "period": "TRAINING_cv",
+  "fold": 0,
+  "n_vars": 8,
+  "variables": [
+   "addr_coworking",
+   "country_cpi_tier",
+   "dd_overdue",
+   "is_terminated",
+   "n_exceeds_authority",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 2,
+  "period": "TRAINING_cv",
+  "fold": 1,
+  "n_vars": 14,
+  "variables": [
+   "addr_coworking",
+   "addr_virtual_office",
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "has_declared_parent",
+   "n_business_units",
+   "n_sponsors",
+   "onboard_year",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "remit_country_differs",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 2,
+  "period": "TRAINING_cv",
+  "fold": 2,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 2,
+  "period": "TRAINING_cv",
+  "fold": 3,
+  "n_vars": 1,
+  "variables": [
+   "country_cpi"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 2,
+  "period": "TRAINING_cv",
+  "fold": 4,
+  "n_vars": 3,
+  "variables": [
+   "country_cpi_tier",
+   "q_public_official_interaction",
+   "region_INTL"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 2,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 2,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 3,
+  "period": "TRAINING_cv",
+  "fold": 0,
+  "n_vars": 9,
+  "variables": [
+   "addr_coworking",
+   "addr_virtual_office",
+   "country_cpi_tier",
+   "dd_overdue",
+   "is_terminated",
+   "n_exceeds_authority",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 3,
+  "period": "TRAINING_cv",
+  "fold": 1,
+  "n_vars": 25,
+  "variables": [
+   "addr_coworking",
+   "addr_virtual_office",
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "expert_hcp_consultant",
+   "has_declared_parent",
+   "has_lei",
+   "is_terminated",
+   "migrated_erp",
+   "n_business_units",
+   "n_link_serves",
+   "n_pay_months",
+   "n_sponsors",
+   "onboard_year",
+   "onboarded_last_3y",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_JAPAN_CHINA",
+   "region_US",
+   "remit_country_differs",
+   "share_eng_flag_gov",
+   "share_sponsor_missing",
+   "share_sponsor_system",
+   "svc_flag_gov"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 3,
+  "period": "TRAINING_cv",
+  "fold": 2,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 3,
+  "period": "TRAINING_cv",
+  "fold": 3,
+  "n_vars": 1,
+  "variables": [
+   "country_cpi"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 3,
+  "period": "TRAINING_cv",
+  "fold": 4,
+  "n_vars": 3,
+  "variables": [
+   "country_cpi_tier",
+   "q_public_official_interaction",
+   "region_INTL"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 3,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 3,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 4,
+  "period": "TRAINING_cv",
+  "fold": 0,
+  "n_vars": 7,
+  "variables": [
+   "country_cpi_tier",
+   "dd_overdue",
+   "is_terminated",
+   "n_exceeds_authority",
+   "n_link_serves",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 4,
+  "period": "TRAINING_cv",
+  "fold": 1,
+  "n_vars": 1,
+  "variables": [
+   "country_cpi"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 4,
+  "period": "TRAINING_cv",
+  "fold": 2,
+  "n_vars": 7,
+  "variables": [
+   "addr_coworking",
+   "country_cpi",
+   "dd_overdue",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 4,
+  "period": "TRAINING_cv",
+  "fold": 3,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 4,
+  "period": "TRAINING_cv",
+  "fold": 4,
+  "n_vars": 3,
+  "variables": [
+   "country_cpi_tier",
+   "q_public_official_interaction",
+   "region_INTL"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 4,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "full",
+  "seed": 4,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T",
+  "seed": 0,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T",
+  "seed": 0,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T",
+  "seed": 1,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 8,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-T",
+  "seed": 1,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 8,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-T",
+  "seed": 2,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 6,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T",
+  "seed": 2,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 6,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T",
+  "seed": 3,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T",
+  "seed": 3,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T",
+  "seed": 4,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T",
+  "seed": 4,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T_ext",
+  "seed": 0,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T_ext",
+  "seed": 0,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T_ext",
+  "seed": 1,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T_ext",
+  "seed": 1,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T_ext",
+  "seed": 2,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T_ext",
+  "seed": 2,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T_ext",
+  "seed": 3,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T_ext",
+  "seed": 3,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T_ext",
+  "seed": 4,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-T_ext",
+  "seed": 4,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 4,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-C",
+  "seed": 0,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 7,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-C",
+  "seed": 0,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 7,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-C",
+  "seed": 1,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 7,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-C",
+  "seed": 1,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 7,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-C",
+  "seed": 2,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 6,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-C",
+  "seed": 2,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 6,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-C",
+  "seed": 3,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 7,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-C",
+  "seed": 3,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 7,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-C",
+  "seed": 4,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-C",
+  "seed": 4,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-D",
+  "seed": 0,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 12,
+  "variables": [
+   "addr_changed_after_onboard",
+   "addr_coworking",
+   "addr_virtual_office",
+   "dd_overdue",
+   "has_declared_parent",
+   "is_terminated",
+   "n_business_units",
+   "n_sponsors",
+   "onboard_year",
+   "q_public_official_interaction",
+   "risk_rating_ord",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-D",
+  "seed": 0,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 12,
+  "variables": [
+   "addr_changed_after_onboard",
+   "addr_coworking",
+   "addr_virtual_office",
+   "dd_overdue",
+   "has_declared_parent",
+   "is_terminated",
+   "n_business_units",
+   "n_sponsors",
+   "onboard_year",
+   "q_public_official_interaction",
+   "risk_rating_ord",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-D",
+  "seed": 1,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 24,
+  "variables": [
+   "addr_changed_after_onboard",
+   "addr_coworking",
+   "addr_virtual_office",
+   "dd_enhanced",
+   "dd_overdue",
+   "expert_hcp_consultant",
+   "expert_regulatory_access",
+   "has_declared_parent",
+   "has_lei",
+   "is_terminated",
+   "migrated_erp",
+   "n_approver_role_missing",
+   "n_business_units",
+   "n_link_serves",
+   "n_sponsors",
+   "onboard_year",
+   "onboarded_last_3y",
+   "remit_country_differs",
+   "risk_rating_ord",
+   "share_commission_cash",
+   "share_eng_flag_gov",
+   "share_sponsor_missing",
+   "share_sponsor_system",
+   "top3_month_share"
+  ]
+ },
+ {
+  "version": "-D",
+  "seed": 1,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 24,
+  "variables": [
+   "addr_changed_after_onboard",
+   "addr_coworking",
+   "addr_virtual_office",
+   "dd_enhanced",
+   "dd_overdue",
+   "expert_hcp_consultant",
+   "expert_regulatory_access",
+   "has_declared_parent",
+   "has_lei",
+   "is_terminated",
+   "migrated_erp",
+   "n_approver_role_missing",
+   "n_business_units",
+   "n_link_serves",
+   "n_sponsors",
+   "onboard_year",
+   "onboarded_last_3y",
+   "remit_country_differs",
+   "risk_rating_ord",
+   "share_commission_cash",
+   "share_eng_flag_gov",
+   "share_sponsor_missing",
+   "share_sponsor_system",
+   "top3_month_share"
+  ]
+ },
+ {
+  "version": "-D",
+  "seed": 2,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 29,
+  "variables": [
+   "addr_changed_after_onboard",
+   "addr_coworking",
+   "addr_virtual_office",
+   "adverse_media",
+   "dd_enhanced",
+   "dd_overdue",
+   "expert_hcp_consultant",
+   "expert_regulatory_access",
+   "has_declared_parent",
+   "has_lei",
+   "has_registry_no",
+   "is_terminated",
+   "migrated_erp",
+   "n_approver_role_missing",
+   "n_business_units",
+   "n_link_serves",
+   "n_pay_months",
+   "n_sponsors",
+   "onboard_year",
+   "onboarded_last_3y",
+   "q_pep_connected",
+   "remit_country_differs",
+   "risk_rating_ord",
+   "share_commission_cash",
+   "share_contract_none",
+   "share_eng_flag_gov",
+   "share_sponsor_missing",
+   "share_sponsor_system",
+   "top3_month_share"
+  ]
+ },
+ {
+  "version": "-D",
+  "seed": 2,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 29,
+  "variables": [
+   "addr_changed_after_onboard",
+   "addr_coworking",
+   "addr_virtual_office",
+   "adverse_media",
+   "dd_enhanced",
+   "dd_overdue",
+   "expert_hcp_consultant",
+   "expert_regulatory_access",
+   "has_declared_parent",
+   "has_lei",
+   "has_registry_no",
+   "is_terminated",
+   "migrated_erp",
+   "n_approver_role_missing",
+   "n_business_units",
+   "n_link_serves",
+   "n_pay_months",
+   "n_sponsors",
+   "onboard_year",
+   "onboarded_last_3y",
+   "q_pep_connected",
+   "remit_country_differs",
+   "risk_rating_ord",
+   "share_commission_cash",
+   "share_contract_none",
+   "share_eng_flag_gov",
+   "share_sponsor_missing",
+   "share_sponsor_system",
+   "top3_month_share"
+  ]
+ },
+ {
+  "version": "-D",
+  "seed": 3,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 16,
+  "variables": [
+   "addr_changed_after_onboard",
+   "addr_coworking",
+   "addr_virtual_office",
+   "dd_enhanced",
+   "dd_overdue",
+   "has_declared_parent",
+   "has_lei",
+   "is_terminated",
+   "n_business_units",
+   "n_sponsors",
+   "onboard_year",
+   "remit_country_differs",
+   "risk_rating_ord",
+   "share_commission_cash",
+   "share_eng_flag_gov",
+   "share_sponsor_system"
+  ]
+ },
+ {
+  "version": "-D",
+  "seed": 3,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 16,
+  "variables": [
+   "addr_changed_after_onboard",
+   "addr_coworking",
+   "addr_virtual_office",
+   "dd_enhanced",
+   "dd_overdue",
+   "has_declared_parent",
+   "has_lei",
+   "is_terminated",
+   "n_business_units",
+   "n_sponsors",
+   "onboard_year",
+   "remit_country_differs",
+   "risk_rating_ord",
+   "share_commission_cash",
+   "share_eng_flag_gov",
+   "share_sponsor_system"
+  ]
+ },
+ {
+  "version": "-D",
+  "seed": 4,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 29,
+  "variables": [
+   "addr_changed_after_onboard",
+   "addr_coworking",
+   "addr_virtual_office",
+   "adverse_media",
+   "dd_enhanced",
+   "dd_overdue",
+   "expert_hcp_consultant",
+   "expert_regulatory_access",
+   "has_declared_parent",
+   "has_lei",
+   "has_registry_no",
+   "is_terminated",
+   "migrated_erp",
+   "n_approver_role_missing",
+   "n_business_units",
+   "n_link_serves",
+   "n_pay_months",
+   "n_sponsors",
+   "onboard_year",
+   "onboarded_last_3y",
+   "q_pep_connected",
+   "remit_country_differs",
+   "risk_rating_ord",
+   "share_commission_cash",
+   "share_contract_none",
+   "share_eng_flag_gov",
+   "share_sponsor_missing",
+   "share_sponsor_system",
+   "top3_month_share"
+  ]
+ },
+ {
+  "version": "-D",
+  "seed": 4,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 29,
+  "variables": [
+   "addr_changed_after_onboard",
+   "addr_coworking",
+   "addr_virtual_office",
+   "adverse_media",
+   "dd_enhanced",
+   "dd_overdue",
+   "expert_hcp_consultant",
+   "expert_regulatory_access",
+   "has_declared_parent",
+   "has_lei",
+   "has_registry_no",
+   "is_terminated",
+   "migrated_erp",
+   "n_approver_role_missing",
+   "n_business_units",
+   "n_link_serves",
+   "n_pay_months",
+   "n_sponsors",
+   "onboard_year",
+   "onboarded_last_3y",
+   "q_pep_connected",
+   "remit_country_differs",
+   "risk_rating_ord",
+   "share_commission_cash",
+   "share_contract_none",
+   "share_eng_flag_gov",
+   "share_sponsor_missing",
+   "share_sponsor_system",
+   "top3_month_share"
+  ]
+ },
+ {
+  "version": "-exceeds_authority",
+  "seed": 0,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-exceeds_authority",
+  "seed": 0,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-exceeds_authority",
+  "seed": 1,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 10,
+  "variables": [
+   "addr_coworking",
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "onboard_year",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-exceeds_authority",
+  "seed": 1,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 10,
+  "variables": [
+   "addr_coworking",
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "onboard_year",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-exceeds_authority",
+  "seed": 2,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 8,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-exceeds_authority",
+  "seed": 2,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 8,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-exceeds_authority",
+  "seed": 3,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 7,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-exceeds_authority",
+  "seed": 3,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 7,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-exceeds_authority",
+  "seed": 4,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-exceeds_authority",
+  "seed": 4,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-role_missing",
+  "seed": 0,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-role_missing",
+  "seed": 0,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-role_missing",
+  "seed": 1,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 10,
+  "variables": [
+   "addr_coworking",
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "onboard_year",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-role_missing",
+  "seed": 1,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 10,
+  "variables": [
+   "addr_coworking",
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "onboard_year",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-role_missing",
+  "seed": 2,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-role_missing",
+  "seed": 2,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-role_missing",
+  "seed": 3,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-role_missing",
+  "seed": 3,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-role_missing",
+  "seed": 4,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-role_missing",
+  "seed": 4,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-authority_both",
+  "seed": 0,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-authority_both",
+  "seed": 0,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-authority_both",
+  "seed": 1,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 10,
+  "variables": [
+   "addr_coworking",
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "onboard_year",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-authority_both",
+  "seed": 1,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 10,
+  "variables": [
+   "addr_coworking",
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "onboard_year",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-authority_both",
+  "seed": 2,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 8,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-authority_both",
+  "seed": 2,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 8,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "q_public_official_interaction",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-authority_both",
+  "seed": 3,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 7,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-authority_both",
+  "seed": 3,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 7,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "n_business_units",
+   "region_INTL",
+   "region_US",
+   "share_commission_cash"
+  ]
+ },
+ {
+  "version": "-authority_both",
+  "seed": 4,
+  "period": "VALIDATION",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ },
+ {
+  "version": "-authority_both",
+  "seed": 4,
+  "period": "TEST",
+  "fold": -1,
+  "n_vars": 5,
+  "variables": [
+   "country_cpi",
+   "country_cpi_tier",
+   "dd_overdue",
+   "region_INTL",
+   "region_US"
+  ]
+ }
+]

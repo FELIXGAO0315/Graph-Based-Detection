@@ -1,0 +1,10 @@
+record_id,y,case_id,engagement_id,approver_employee_id,approval_date,role,role_valid_from,role_valid_to,value_band,required_level,approver_status
+TP-A9B2696F,1,CASE-0006,EN-5B0B8498,EMP-AEE53F8B,2012-05-10,finance_approver_l1,2023-02-27,,3,3,role starts later
+TP-1DA94D56,1,CASE-0006,EN-D5CB0A97,EMP-AEE53F8B,2019-05-05,finance_approver_l1,2023-02-27,,3,3,role starts later
+TP-F8FAC605,1,CASE-0006,EN-85CBBBA4,EMP-AEE53F8B,2019-07-03,finance_approver_l1,2023-02-27,,4,3,role starts later
+TP-2D431719,1,CASE-0006,EN-9220B92E,EMP-AEE53F8B,2013-07-28,finance_approver_l1,2023-02-27,,1,1,role starts later
+TP-2C00A445,1,CASE-0006,EN-FC22B3B8,EMP-AEE53F8B,2020-12-25,finance_approver_l1,2023-02-27,,3,3,role starts later
+TP-E699BBA1,1,CASE-0007,EN-DCF017DC,EMP-AEE53F8B,2019-10-04,finance_approver_l1,2023-02-27,,2,2,role starts later
+TP-3B6F5EF3,1,CASE-0007,EN-2B6D8668,EMP-AEE53F8B,2021-12-07,finance_approver_l1,2023-02-27,,1,1,role starts later
+TP-C274516B,1,CASE-0007,EN-9911E608,EMP-AEE53F8B,2021-11-07,finance_approver_l1,2023-02-27,,2,2,role starts later
+TP-E4DEA4DF,1,CASE-0007,EN-E20A5AB2,EMP-AEE53F8B,2022-03-19,finance_approver_l1,2023-02-27,,3,3,role starts later

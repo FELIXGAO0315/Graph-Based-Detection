@@ -1,0 +1,282 @@
+{
+ "snapshot": "2026-06-30",
+ "periods": {
+  "TRAINING": [
+   null,
+   "2024-06-30"
+  ],
+  "VALIDATION": [
+   "2024-06-30",
+   "2025-06-30"
+  ],
+  "TEST": [
+   "2025-06-30",
+   "2026-06-30"
+  ]
+ },
+ "cutoffs": [
+  "2024-06-30",
+  "2025-06-30",
+  "2026-06-30"
+ ],
+ "protocol": {
+  "TRAINING_cv": "grouped stratified 5-fold CV on TR_A (features as of 2024-06-30, y = TRAINING cases), fold random_state = 1000 + seed",
+  "VALIDATION": "train TR_A (2024-06-30) -> score EV_VAL (2025-06-30; TRAINING-case members removed; y = VALIDATION cases)",
+  "TEST": "the same fit on TR_A -> score EV_TEST (2026-06-30; earlier-case members removed; y = TEST cases); models are trained once"
+ },
+ "as_of_rules": "valid time <= t and observed_at <= t where recorded; end/termination dates after t open at t; payments by closed month; latest country-context edition <= t",
+ "emergence": "max(last member onboarding, end of the dated event window in why_flagged); results/case_periods.csv overrides when present",
+ "case_periods": {
+  "CASE-0001": "TRAINING",
+  "CASE-0002": "TRAINING",
+  "CASE-0003": "VALIDATION",
+  "CASE-0004": "TRAINING",
+  "CASE-0005": "TRAINING",
+  "CASE-0006": "TEST",
+  "CASE-0007": "TEST",
+  "CASE-0008": "TEST",
+  "CASE-0009": "TRAINING",
+  "CASE-0010": "TEST",
+  "CASE-0011": "VALIDATION",
+  "CASE-0012": "TEST",
+  "CASE-0013": "VALIDATION",
+  "CASE-0014": "TEST",
+  "CASE-0015": "TRAINING",
+  "CASE-0016": "VALIDATION",
+  "CASE-0017": "TEST",
+  "CASE-0018": "TRAINING",
+  "CASE-0019": "VALIDATION",
+  "CASE-0020": "TRAINING",
+  "CASE-0021": "TRAINING",
+  "CASE-0022": "TRAINING",
+  "CASE-0023": "TRAINING",
+  "CASE-0024": "TRAINING",
+  "CASE-0025": "VALIDATION",
+  "CASE-0026": "VALIDATION",
+  "CASE-0027": "TRAINING",
+  "CASE-0028": "TRAINING",
+  "CASE-0029": "TRAINING",
+  "CASE-0030": "TRAINING",
+  "CASE-0031": "TEST",
+  "CASE-0032": "TEST",
+  "CASE-0033": "TEST"
+ },
+ "seeds": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "coverage_budget": 100,
+ "label": "member of a labelled case that emerged by the cut-off",
+ "group": "union of cases sharing a member",
+ "primary_metric": "AP_case",
+ "main_model": "5_gradient_boosting",
+ "sensitivity_model": "4_random_forest",
+ "baselines": {
+  "full": "all Layer 1 variables",
+  "conservative": [
+   "n_exceeds_authority",
+   "n_approver_role_missing"
+  ]
+ },
+ "red_flag_rule": {
+  "definition": "payment in month >= termination month + GRACE_MONTHS + 1 (as known at the cut-off)",
+  "GRACE_MONTHS": 1,
+  "flagged": {
+   "2024-06-30": [],
+   "2025-06-30": [
+    "TP-33FC40CA"
+   ],
+   "2026-06-30": [
+    "TP-33FC40CA"
+   ]
+  }
+ },
+ "selection": "Lasso / Elastic net / Adaptive lasso / L1-SVM on Prep+StandardScaler, C by grouped inner CV (AP, 1-SE), >=3/4 vote, random_state = seed",
+ "preprocessing": "Winsorizer(1%/99%, >10 distinct values) + median imputation, fitted on the training part",
+ "models": {
+  "1_linear_regression": "LinearRegression()",
+  "2_logistic_regression": "LogisticRegression(class_weight='balanced', max_iter=5000)",
+  "3_decision_tree": "DecisionTreeClassifier(class_weight='balanced', max_depth=4, min_samples_leaf=5,\n                       random_state=42)",
+  "4_random_forest": "RandomForestClassifier(class_weight='balanced_subsample', min_samples_leaf=3,\n                       n_estimators=500, n_jobs=1, random_state=42)",
+  "5_gradient_boosting": "HistGradientBoostingClassifier(class_weight='balanced', l2_regularization=1.0,\n                               learning_rate=0.05, max_depth=3, max_iter=300,\n                               random_state=42)"
+ },
+ "isolation_forest": "n_estimators=500, max_samples=256, fitted on all vendors present at the cut-off, 5 seeds averaged per evaluation seed",
+ "ablation_groups": {
+  "-T": [
+   "is_terminated",
+   "tenure_years",
+   "onboard_year"
+  ],
+  "-T_ext": [
+   "is_terminated",
+   "tenure_years",
+   "onboard_year",
+   "onboarded_last_3y",
+   "dd_overdue"
+  ],
+  "-C": [
+   "n_exceeds_authority",
+   "n_business_units",
+   "n_sponsors",
+   "n_inst_links",
+   "n_link_serves",
+   "n_inst_countries",
+   "share_sponsor_system",
+   "share_cross_border",
+   "share_paying_mkt_differs",
+   "n_links_foreign",
+   "share_links_public",
+   "n_eng_markets",
+   "n_distinct_approvers",
+   "n_approver_is_sponsor",
+   "n_approver_role_missing"
+  ],
+  "-D": [
+   "country_cpi",
+   "country_cpi_tier",
+   "country_bo_access_low",
+   "country_sanctioned",
+   "region_US",
+   "region_EUROPE",
+   "region_JAPAN_CHINA",
+   "region_INTL"
+  ],
+  "-exceeds_authority": [
+   "n_exceeds_authority"
+  ],
+  "-role_missing": [
+   "n_approver_role_missing"
+  ],
+  "-authority_both": [
+   "n_exceeds_authority",
+   "n_approver_role_missing"
+  ]
+ },
+ "modelling_features": [
+  "is_individual",
+  "is_terminated",
+  "tenure_years",
+  "onboard_year",
+  "onboarded_last_3y",
+  "migrated_erp",
+  "created_minus_onboard_days",
+  "has_lei",
+  "has_registry_no",
+  "has_declared_parent",
+  "remit_country_differs",
+  "generic_email",
+  "expert_hcp_consultant",
+  "expert_investigator_kol",
+  "expert_writer_translator",
+  "expert_regulatory_access",
+  "expert_patient_expert",
+  "expert_other_consultant",
+  "country_cpi",
+  "country_cpi_tier",
+  "country_bo_access_low",
+  "country_sanctioned",
+  "region_US",
+  "region_EUROPE",
+  "region_JAPAN_CHINA",
+  "region_INTL",
+  "dd_enhanced",
+  "q_gov_ownership",
+  "q_pep_connected",
+  "q_public_official_interaction",
+  "q_former_public_official",
+  "adverse_media",
+  "screening_potential_match",
+  "risk_rating_ord",
+  "dd_overdue",
+  "dd_before_onboard_days",
+  "n_service_rows",
+  "n_service_cats",
+  "svc_flag_hcp",
+  "svc_flag_gov",
+  "svc_flag_int",
+  "svc_flag_flow",
+  "svc_added_after_onboard",
+  "n_engagements",
+  "n_sponsors",
+  "share_sponsor_missing",
+  "share_sponsor_system",
+  "n_business_units",
+  "n_eng_markets",
+  "share_cross_border",
+  "max_value_band",
+  "mean_value_band",
+  "share_contract_none",
+  "share_eng_flag_int",
+  "share_eng_flag_gov",
+  "eng_late_record_days",
+  "n_fin_approvals",
+  "n_exceeds_authority",
+  "n_approver_role_missing",
+  "share_approver_missing",
+  "n_approver_is_sponsor",
+  "n_distinct_approvers",
+  "n_missing_compliance_review",
+  "log_total_spend",
+  "n_pay_months",
+  "share_non_po",
+  "share_pcard_expense",
+  "manual_pay_rate",
+  "mean_round_share",
+  "n_expense_classes",
+  "share_tov",
+  "share_paying_mkt_differs",
+  "share_commission_cash",
+  "n_invoice_above_band",
+  "n_months_paid_after_term",
+  "spike_ratio",
+  "top3_month_share",
+  "cv_monthly_spend",
+  "max_fmv_cap_ratio",
+  "n_inst_links",
+  "n_inst_countries",
+  "n_links_foreign",
+  "share_links_public",
+  "n_link_serves",
+  "n_addresses",
+  "addr_virtual_office",
+  "addr_registered_agent",
+  "addr_po_box",
+  "addr_residential",
+  "addr_coworking",
+  "share_addr_type_missing",
+  "addr_changed_after_onboard"
+ ],
+ "versions": {
+  "python": "3.14.2",
+  "sklearn": "1.8.0",
+  "pandas": "2.3.3",
+  "numpy": "2.4.1"
+ },
+ "sha256": {
+  "approval_policy_matrix.csv": "d387a1f357d5b6e5bd165881f4439596f06193a8c9a827b1f20b3ba2c1cb72b0",
+  "business_events.csv": "9a304c4273ca3f55ff778a71f0ad0c759d49e63c6ff457a5b4e4b6e6f5871505",
+  "country_risk_context.csv": "9e95614adba57ead863f9c6b762e68af490b7e0e688bc5b9bd05a7c373ee940c",
+  "employee_roles.csv": "c1c8031b48b85384cc77752700ee07bfaa4267bba4e197daa653159cb3d97793",
+  "employees.csv": "9a82bd9bf90507f2f6047465b2d56199d4a7335296910d6f9770855c578057e2",
+  "fmv_rate_cards.csv": "2a0ffa1448d2fff5a9c0132d9ee873abf5bbffb7e43e1ea7402621709375fe26",
+  "healthcare_institutions.csv": "041a2e84580f434f3d634aef7cb3bc85fe953476051188811ff7942204c4a44f",
+  "labelled_cases_TRAINING_SET.csv": "95a365749d082da798dd0a7184c10a72bcd213d9ead64a8fda496e10a5d5414b",
+  "markets.csv": "1ec776678892b41b9f428f695ccd175c4986e785b5e9ebea68bee92cbdd7c236",
+  "paying_entities.csv": "eb747fe1beb4d7c07688d991b7825767269af6ac2a759b73ac127f79d6b5361a",
+  "registry_L_parents.csv": "86f47bade9aab3c98adc572a6cef5ffe8409a8fe7b2224c880c8e25426c4b24b",
+  "service_categories.csv": "834091c706accb53c54833e45b0ae0900c78f51047453757afc8e8ec22052a2a",
+  "submission_template.csv": "33656c0d0ab0adfb9c89fa2dc2e8f9f0dd73e0b85cd8261fe25fa061d26f4eb9",
+  "third_parties.csv": "ba26bfcdbb9b91992a07ee864a722a84db0023f90e6309697a5ddbf08cb1f363",
+  "tp_address_history.csv": "4e81656640f4971f75ce4e61bfc3c9309c36178bc17f82986be0a19cc607f63b",
+  "tp_due_diligence.csv": "44db01bf6317de42dd593c5c4ad32c2e222d0b4b16e9d666b87dba5fae63d324",
+  "tp_engagement_approvals.csv": "e4b2298f33f7055a3d6294cff8561b3c56649e9841ca288052ac7af1ed42a451",
+  "tp_engagements.csv": "e2d7e5e17915b6e67f3658250c1e89ccfbd36401bb5b300801280887cd4da83c",
+  "tp_institution_links.csv": "8923af1d776408daf965f9f6655e7bab0f036f31082abbe16c97026943c8624b",
+  "tp_payments_monthly.csv": "6301c0e01ddc6a4bc52b5692ea3b0047471cfc808b06c526ca9756852f9318ce",
+  "tp_services.csv": "147b69fce894c08e1a6ff1a78dbb8869a628dd007205f124dbd68ea8283b9e31",
+  "features_L1.csv": "00318feb41bf322496d16a1e95d92eba77a4e4f79f0b8f5aea8b938a1627554a"
+ }
+}

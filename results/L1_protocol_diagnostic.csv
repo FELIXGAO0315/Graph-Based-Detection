@@ -1,0 +1,8 @@
+protocol,period,AP_case,AP,random
+"1 old: random CV, 2026-06-30 features",TRAINING,0.545,0.441,0.077
+"1 old: random CV, 2026-06-30 features",VALIDATION,0.37,0.398,0.027
+"1 old: random CV, 2026-06-30 features",TEST,0.576,0.554,0.073
+"2a in-period CV, as-of-2024-06-30 values",TRAINING,0.359,0.26,0.088
+"2b in-period CV, 2026-06-30 values of the same rows",TRAINING,0.342,0.243,0.088
+3 out of time (temporal),VALIDATION,0.229,0.328,0.028
+3 out of time (temporal),TEST,0.276,0.223,0.073
