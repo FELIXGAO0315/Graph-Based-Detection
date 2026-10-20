@@ -1,0 +1,8 @@
+candidate,1 mechanism,2 incremental,3 not ordinary,4 volume,5 not weaker,adopted,flagged,median strongest of 14,TRAINING members,p (vs base),VALIDATION: flagged / members,why not
+PUBLIC_INSTITUTION_EXPERT_CLUSTER,✓,✗,✓,✓,✓,False,6 (0.6%),0.64,0/6,0.65,0 / 0,the 14 typologies already fire (0.64)
+FMV_CAP_BREACH,✓,✓,✓,✓,✓,True,3 (0.3%),0.0,0/3,0.8,3 / 0,—
+PAYMENT_AFTER_TERMINATION,✗,✓,✓,✓,✓,False,1 (0.1%),0.0,0/1,0.93,1 / 1,no dossier mechanism
+SPLIT_ENGAGEMENTS,✗,✓,✗,✓,✓,False,4 (0.4%),0.17,0/4,0.75,3 / 0,no dossier mechanism; not separable from ordinary repeat contracting
+UNDECLARED_SHARED_CONTACT,✓,✗,✓,✗,✓,False,105 (10.5%),0.31,11/105,0.94,68 / 0,the 14 typologies already fire (0.31); 10.5% of vendors
+REONBOARDED_AFTER_TERMINATION,✗,✗,✗,✓,✓,False,21 (2.1%),0.34,1/21,0.56,14 / 0,no dossier mechanism; the 14 typologies already fire (0.34); mostly duplicate records of one vendor (entity resolution)
+SELF_APPROVAL,✗,✗,✗,✓,✓,False,50 (5.0%),0.34,7/50,0.98,43 / 2,no dossier mechanism; the 14 typologies already fire (0.34); all self-approvals by the market_gm role (role design)

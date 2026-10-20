@@ -1,10 +1,10 @@
-case,period,tags,members,own signal fires on,own-signal median rank,L2 risk score median rank,前 100 名中的成员数,@100 最佳 IoU,entities,member pairs linked directly,"random sets, directly",member pairs within 2 hops,"random sets, 2 hops",relations linking members
+case,period,tags,members,own signal fires on,own-signal median rank,L2 risk score (14+3) median rank,members in top 100,best IoU @100,entities,member pairs linked directly,"random sets, directly",member pairs within 2 hops,"random sets, 2 hops",relations linking members
 CASE-0001,TRAINING,SHARED_ADDRESS,6,100%,7,144,0,0.0,5,1.0,0.01,1.0,0.09,"address 10, approver 9, sponsor 6"
 CASE-0002,TRAINING,SHARED_ADDRESS,6,100%,1,115,1,0.17,6,1.0,0.02,1.0,0.11,"address 15, approver 7, sponsor 1, institution 1"
-CASE-0006,TEST,APPROVER_CONCENTRATION|SPONSOR_APPROVER_COUPLING,13,92%,32,215,2,0.06,13,0.86,0.02,1.0,0.15,"sponsor 66, institution 1, approver 1"
-CASE-0007,TEST,APPROVER_CONCENTRATION|SPONSOR_APPROVER_COUPLING,12,83%,67,215,0,0.0,12,0.7,0.02,1.0,0.16,"sponsor 45, window 1"
+CASE-0006,TEST,APPROVER_CONCENTRATION|SPONSOR_APPROVER_COUPLING,13,92%,32,215,2,0.06,13,0.86,0.02,1.0,0.16,"sponsor 66, institution 1, approver 1"
+CASE-0007,TEST,APPROVER_CONCENTRATION|SPONSOR_APPROVER_COUPLING,12,83%,67,215,0,0.0,12,0.7,0.02,1.0,0.15,"sponsor 45, window 1"
 CASE-0015,TRAINING,GEOGRAPHY_LINKED_CONCENTRATION,10,100%,13,203,1,0.1,10,0.91,0.02,1.0,0.1,"approver 29, sponsor 23, window 6"
-CASE-0018,TRAINING,ACTIVITY_TIMING_CONCENTRATION,4,75%,19,167,0,0.0,4,1.0,0.01,1.0,0.1,"sponsor 6, window 3, approver 2"
+CASE-0018,TRAINING,ACTIVITY_TIMING_CONCENTRATION,4,75%,19,167,0,0.0,4,1.0,0.02,1.0,0.09,"sponsor 6, window 3, approver 2"
 CASE-0022,TRAINING,LAYERED_COMPLEX_OWNERSHIP,1,0%,7,229,0,0.0,1,,,,,
-CASE-0024,TRAINING,OWNERSHIP_OPERATIONAL_OVERLAP|COMMON_BENEFICIAL_OWNER,2,100%,7,229,0,0.0,2,1.0,0.02,1.0,0.09,"sponsor 1, approver 1"
-CASE-0029,TRAINING,OWNERSHIP_CHANGE_STRUCTURAL_SHIFT,3,33%,3,33,3,0.25,3,1.0,0.02,1.0,0.08,"sponsor 3, owner 3, window 1, approver 1"
+CASE-0024,TRAINING,OWNERSHIP_OPERATIONAL_OVERLAP|COMMON_BENEFICIAL_OWNER,2,100%,7,229,0,0.0,2,1.0,0.02,1.0,0.1,"sponsor 1, approver 1"
+CASE-0029,TRAINING,OWNERSHIP_CHANGE_STRUCTURAL_SHIFT,3,33%,3,33,3,0.25,3,1.0,0.01,1.0,0.1,"sponsor 3, owner 3, window 1, approver 1"
