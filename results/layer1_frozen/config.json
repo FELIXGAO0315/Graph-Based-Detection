@@ -20,9 +20,9 @@
   "2026-06-30"
  ],
  "protocol": {
-  "TRAINING_cv": "grouped stratified 5-fold CV on TR_A (features as of 2024-06-30, y = TRAINING cases), fold random_state = 1000 + seed",
-  "VALIDATION": "train TR_A (2024-06-30) -> score EV_VAL (2025-06-30; TRAINING-case members removed; y = VALIDATION cases)",
-  "TEST": "the same fit on TR_A -> score EV_TEST (2026-06-30; earlier-case members removed; y = TEST cases); models are trained once"
+  "TRAINING_cv": "grouped stratified 5-fold CV on TR_TRAIN (features as of 2024-06-30, y = TRAINING cases), fold random_state = 1000 + seed",
+  "VALIDATION": "train TR_TRAIN (2024-06-30) -> score EV_VAL (2025-06-30; TRAINING-case members removed; y = VALIDATION cases)",
+  "TEST": "the same fit on TR_TRAIN -> score EV_TEST (2026-06-30; earlier-case members removed; y = TEST cases); models are trained once"
  },
  "as_of_rules": "valid time <= t and observed_at <= t where recorded; end/termination dates after t open at t; payments by closed month; latest country-context edition <= t",
  "emergence": "max(last member onboarding, end of the dated event window in why_flagged); results/case_periods.csv overrides when present",
