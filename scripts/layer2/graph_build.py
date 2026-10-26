@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]  # repository root (this file is in scripts/layer2/)
 DEFAULT_DATA_DIR = ROOT / "student_bundle"
 SNAPSHOT = pd.Timestamp("2026-06-30")
 BUILD_VERSION = "graph_build-2"
