@@ -1,0 +1,44 @@
+category_code_v2,parent,name,category_code_v1,flags
+COM.DIST,COM,Distributors / importers,COM.DIST,int;gov;flow
+COM.TEND,COM,Tender agents,COM.DIST,int;gov
+COM.MACC,COM,Market access & pricing consultants,COM.MACC,gov
+COM.CSO,COM,Contract sales organizations,COM.CSO,hcp
+COM.KOL,COM,KOL management,HCP.ADV,hcp
+HCP.CONS,HCP,HCP consultants / speakers,HCP.CONS,hcp
+HCP.ADV,HCP,Advisory boards / scientific advisors,HCP.ADV,hcp
+HCP.MEDED,HCP,Medical education / CME providers,HCP.MEDED,hcp
+HCP.GRANT,HCP,Grant recipients (HCOs,HCP.GRANT,hcp
+HCP.SOC,HCP,Professional societies,HCP.GRANT,hcp
+EVT.CONG,EVT,Congress / event organizers,EVT.CONG,hcp;flow
+EVT.DMC,EVT,Destination management companies,EVT.TRAV,hcp;flow
+EVT.TRAV,EVT,Travel agencies,EVT.TRAV,hcp;flow
+EVT.VENUE,EVT,Venues,EVT.CONG,flow
+MED.COMM,MED,Medical communications,MED.COMM,hcp
+MED.PUB,MED,Publication support / medical writing,MED.COMM,hcp
+MED.TRANS,MED,Translation / interpreting,MED.TRANS,
+MED.MIC,MED,Medical information call centers,MED.COMM,hcp
+RND.CRO,RND,Contract research organizations,RND.CRO,gov
+RND.SMO,RND,Site management organizations,RND.CRO,hcp
+RND.SITE,RND,Investigator sites,RND.SITE,hcp
+RND.LAB,RND,Central / specialty labs,RND.LAB,
+RND.CSL,RND,Clinical supply logistics,SCM.LOG,flow
+RND.REG,RND,Regulatory consultants / local license holders,RND.REG,gov;int
+SCM.API,SCM,API / raw materials,SCM.API,flow
+SCM.CMO,SCM,CDMOs / CMOs,SCM.CMO,flow
+SCM.PACK,SCM,Packaging,SCM.PACK,flow
+SCM.COLD,SCM,Cold-chain logistics,SCM.LOG,flow
+SCM.FRT,SCM,Freight forwarders,SCM.LOG,flow;int
+SCM.CUST,SCM,Customs brokers,SCM.LOG,int;gov;flow
+SCM.WH,SCM,Warehousing,SCM.LOG,flow
+SCM.WASTE,SCM,Waste disposal,GNA.FAC,
+PAT.PSP,PAT,Patient support program vendors,PAT.PSP,hcp
+PAT.HUB,PAT,Hub services / specialty pharmacy,PAT.PSP,hcp
+PAT.NURSE,PAT,Nurse educators,PAT.PSP,hcp
+GNA.IT,GNA,IT & digital,GNA.IT,
+GNA.MKT,GNA,Marketing / creative agencies,GNA.MKT,
+GNA.MR,GNA,Market research,GNA.MR,hcp
+GNA.FAC,GNA,Facilities,GNA.FAC,
+GNA.LEGAL,GNA,Legal & professional services,GNA.PROF,
+GNA.HR,GNA,HR / staffing,GNA.PROF,
+GNA.GOVFEE,GNA,Government fees / licenses,GNA.PROF,gov
+GNA.CONS,GNA,General consultants,GNA.PROF,
