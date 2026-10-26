@@ -1,0 +1,11 @@
+event_name,start_date,end_date,markets,description
+COVID-19 operating regime,2020-03-01,2021-12-31,ALL,Congress/travel activity collapsed; virtual events; cold-chain and vaccine logistics surge; emergency sourcing.
+ERP migration (legacy to new ERP),2022-05-01,,ALL,Vendor master re-entered; created_date reset for migrated records; unassigned engagements defaulted to a system sponsor.
+Consumer healthcare demerger,2022-07-18,,ALL,Consumer-franchise vendors transferred or terminated; some continued under transitional services.
+Biotech acquisition integration,2022-11-15,2023-03-15,ALL,Acquired company's vendors onboarded into the vendor master.
+Biotech acquisition integration,2023-08-01,2023-11-29,ALL,Acquired company's vendors onboarded into the vendor master.
+Biotech acquisition integration,2024-05-15,2024-09-12,ALL,Acquired company's vendors onboarded into the vendor master.
+Biotech acquisition integration,2025-02-10,2025-06-10,ALL,Acquired company's vendors onboarded into the vendor master.
+Adult respiratory vaccine launch,2023-09-01,2024-02-28,AT|CN|CZ|DE|DO|EG|GB|HU|IE|IT|JP|KR|RO|TH|US,"Launch-related medical education, speaker, congress, market-access and patient-support onboarding."
+Service taxonomy recode v1 to v2,2024-01-01,,ALL,Service categories re-coded; crosswalk provided.
+IT / digital vendor rationalization,2025-11-01,2026-03-01,ALL,IT vendor consolidation: terminations and new strategic vendors.
