@@ -1,0 +1,2 @@
+n_submitted,n_planted,P@10,P@25,P@50,R@25,R@50,R@100,AP,first_hit_rank,mean_iou,member_recall,exact_recovery,tag_exact,tag_jaccard,macro_tag_recall,worst_tag_recall,fp_top50
+179,33,1.0,0.88,0.66,0.6666666666666666,1.0,1.0,0.9282881949183727,1,0.951084101084101,0.9638306138306139,0.7575757575757576,0.6666666666666666,0.7952741702741702,1.0,1.0,17

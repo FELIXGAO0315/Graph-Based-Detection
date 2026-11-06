@@ -1,0 +1,9 @@
+metric,value,note
+mean_case_iou,0.83,"approximate, from the sponsor's e-mail (Jimmy, 2026-11)"
+mean_member_recall,0.91,approximate
+exact_recovery,>0.5,"""just over half of the matched cases"""
+typology_accuracy_matched,0.79,approximate
+P@10,0.50,
+P@25,0.48,
+P@50,0.38,
+recall,not disclosed,"withheld by the sponsor to avoid test leakage; ""a meaningful number of planted cases missed"""
