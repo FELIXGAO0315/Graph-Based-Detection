@@ -1,0 +1,10 @@
+metric,value,note
+P@10,0.80,"v1.0: 0.50 (sponsor's e-mail, Jimmy, 2026-11, second submission)"
+P@25,0.60,v1.0: 0.48
+P@50,0.48,v1.0: 0.38
+mean_case_iou,>0.80,"""remained above 80%"""
+mean_member_recall,~0.90,"""remained around 90%"""
+exact_recovery,~0.5,"""approximately half of the matched cases"""
+typology_accuracy_matched,0.74,"approximate; v1.0: 0.79"
+zero_recall_typologies,>=1,"""at least one typology currently has zero recall"" (also in v1.0); not named, to keep the evaluation blind"
+recall,not disclosed,
