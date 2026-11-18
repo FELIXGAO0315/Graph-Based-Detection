@@ -1,0 +1,11 @@
+case_rank,member_record_ids,typology_tags,score,reason_codes
+1,TP-E481ECBA,POLICY_VIOLATION,0.5,"1 engagement(s) in categories that require a compliance review bypassed it: 1 without a review 30 days after the start, 0 reviewed only after the start"
+2,TP-42BBA791,POLICY_VIOLATION,0.475,"1 engagement(s) in categories that require a compliance review bypassed it: 0 without a review 30 days after the start, 1 reviewed only after the start"
+3,TP-48B9EB61,POLICY_VIOLATION,0.475,"1 engagement(s) in categories that require a compliance review bypassed it: 0 without a review 30 days after the start, 1 reviewed only after the start"
+4,TP-66277B70,POLICY_VIOLATION,0.475,"1 engagement(s) in categories that require a compliance review bypassed it: 0 without a review 30 days after the start, 1 reviewed only after the start"
+5,TP-6B4864E7,POLICY_VIOLATION,0.475,"1 engagement(s) in categories that require a compliance review bypassed it: 0 without a review 30 days after the start, 1 reviewed only after the start"
+6,TP-7BA091BA,POLICY_VIOLATION,0.475,"1 engagement(s) in categories that require a compliance review bypassed it: 0 without a review 30 days after the start, 1 reviewed only after the start"
+7,TP-7DE2FE9F,POLICY_VIOLATION,0.475,"1 engagement(s) in categories that require a compliance review bypassed it: 0 without a review 30 days after the start, 1 reviewed only after the start"
+8,TP-84B89941,POLICY_VIOLATION,0.475,"1 engagement(s) in categories that require a compliance review bypassed it: 0 without a review 30 days after the start, 1 reviewed only after the start"
+9,TP-9308025B,POLICY_VIOLATION,0.475,"1 engagement(s) in categories that require a compliance review bypassed it: 0 without a review 30 days after the start, 1 reviewed only after the start"
+10,TP-E4AF7A4E,POLICY_VIOLATION,0.475,"1 engagement(s) in categories that require a compliance review bypassed it: 0 without a review 30 days after the start, 1 reviewed only after the start"

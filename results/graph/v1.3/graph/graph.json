@@ -1,0 +1,51 @@
+{
+  "graph_hash": "115402efb65ac068",
+  "dataset_version": "389dbc9127ef",
+  "snapshot": "2026-06-30",
+  "n_nodes": 10089,
+  "n_edges": 20828,
+  "n_activity_rows": 34467,
+  "nodes_by_type": {
+    "AccountingParent": 58,
+    "Address": 993,
+    "ContactPoint": 1759,
+    "DeclaredGroup": 20,
+    "Employee": 1502,
+    "Engagement": 2638,
+    "HealthcareInstitution": 213,
+    "LegalEntity": 508,
+    "NaturalPerson": 373,
+    "ResolvedEntity": 980,
+    "ServiceCategory": 43,
+    "VendorRecord": 1002
+  },
+  "edges_by_relation": {
+    "AFFILIATED_WITH": 68,
+    "APPROVED_BY": 3709,
+    "CONSOLIDATED_BY": 77,
+    "CONTRACTED_UNDER": 2638,
+    "CONTROLS": 10,
+    "DECLARED_MEMBER_OF": 88,
+    "FOR_SERVICE": 3601,
+    "HAS_CONTACT": 2002,
+    "IDENTITY_CANDIDATE": 15,
+    "IS_PERSON": 17,
+    "LOCATED_AT": 1091,
+    "OWNS": 568,
+    "PART_OF": 1002,
+    "PROVIDES_SERVICE": 2382,
+    "REGISTERED_AS": 342,
+    "SAME_AS": 34,
+    "SERVES": 281,
+    "SITE_OF": 54,
+    "SPONSORED_BY": 2466,
+    "ULTIMATE_OWNER": 383
+  },
+  "ownership_terminal_reasons": {
+    "accounting_parent_only": 49,
+    "natural_person": 383,
+    "no_owner_recorded": 57,
+    "stated:exempt_listed": 28,
+    "stated:unknown_parent": 5
+  }
+}

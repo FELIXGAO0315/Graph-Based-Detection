@@ -13,7 +13,7 @@ relationship logic. Layer 3 is the graph model that produces the submission.
 |---|---|---|---|
 | 1 | `layer1_baseline.ipynb` | vendor-level baseline: each vendor's own records only | done, frozen in `results/layer1_frozen/` |
 | 2 | `layer2_relationship_logic.ipynb` | relationship features per typology, new candidate typologies, case queue | done, frozen in `results/layer2_frozen/` |
-| 3 | `layer3_graph_detection.ipynb` | **graph model**: heterogeneous graph, typology detectors, cases, ranking | v1.0 and v1.1 submitted and scored; v1.2 is the current notebook |
+| 3 | `layer3_graph_detection.ipynb` | **graph model**: heterogeneous graph, typology detectors, cases, ranking | v1.0–v1.2 submitted and scored; v1.3 is the current notebook |
 
 **Layer 3 versions.** The notebook always holds the current version. Earlier versions are kept as a git commit
 (the code), `results/graph/<version>/` (the results) and `output/<version>/` (the deliverable).
@@ -22,7 +22,8 @@ relationship logic. Layer 3 is the graph model that produces the submission.
 |---|---|---|---|---|---|
 | v1.0 | commit `67553b4` | first version | 0.868 / 0.940 / 0.857 | `output/v1.0/submission_TEST.csv` | submitted; client score 2026-11 |
 | v1.1 | commit `9fbf4fc` | oversized cases split, policy findings in their own list, ranking reworked | 0.864 / 0.929 / 0.869 | `output/v1.1/` | submitted; client score 2026-11 (P@10 0.80, tag accuracy 0.74) |
-| v1.2 | current notebook | public-institution expert clusters detected, tags that fit the case, weak and duplicate cases left out | 0.864 / 0.929 / 0.856 | `output/v1.2/` | built 2026-11-11, not submitted |
+| v1.2 | commit `1b276d6` | public-institution expert clusters detected, tags that fit the case, weak and duplicate cases left out | 0.864 / 0.929 / 0.856 | `output/v1.2/` | submitted; client score 2026-11 (P@10 0.70, tag accuracy 0.79) |
+| v1.3 | current notebook | developed on the main-data validation labels: period filter (covering findings, standing structures), uncoupled approver groups and chance spike groups ranked low, cross-border corridors, sponsor onboarding bursts, expert-owner benign note, expert cluster removed; main-data validation AP 0.308 → 0.419 | 0.893 / 0.934 / 0.881 | `output/v1.3/` | built 2026-11-18, not submitted |
 
 ---
 
@@ -33,9 +34,10 @@ Graph-Based-Detection/
 ├── README.md
 ├── layer1_baseline.ipynb              Layer 1
 ├── layer2_relationship_logic.ipynb    Layer 2
-├── layer3_graph_detection.ipynb       Layer 3, graph model, current version v1.2 (self-contained: all method code is in the notebook)
+├── layer3_graph_detection.ipynb       Layer 3, graph model, current version v1.3 (self-contained: all method code is in the notebook)
 ├── student_bundle/                    starter data: 1,002 vendor records + 33 labelled cases (labelled_cases_TRAINING_SET)
-├── Full Dataset/                      main data: 21,260 vendor records, no labels (scored blind by the sponsor)
+├── Full Dataset/                      main data: 21,260 vendor records; validation_student_safe.csv: the 43 labelled
+│                                      VALIDATION cases (released 2026-11); TRAINING and TEST are scored blind by the sponsor
 ├── scripts/
 │   ├── layer1/layer1_models.py        Layer 1 models
 │   ├── layer2/                        graph_build.py, layer2_features.py, peer_groups.py
@@ -50,11 +52,13 @@ Graph-Based-Detection/
 │       ├── v1.0/                      Layer 3 v1.0, complete archive (see "Layer 3 v1.0" below)
 │       ├── v1.1/                      Layer 3 v1.1, everything the notebook writes, plus ablation/ (see "Layer 3 v1.1")
 │       ├── v1.2/                      Layer 3 v1.2, everything the notebook writes (see "Layer 3 v1.2")
+│       ├── v1.3/                      Layer 3 v1.3, everything the notebook writes, incl. the validation analysis (see "Layer 3 v1.3")
 │       └── *.csv, graph/, figures/    an earlier v1.0 run, superseded (see the note under "Archive")
 └── output/                            the deliverables, one folder per version, with the client's score once it is back
     ├── v1.0/submission_TEST.csv       first submission, scored 2026-11
     ├── v1.1/submission_TEST.csv       second submission, with policy_findings_TEST.csv and client_score_2026-11.csv
-    └── v1.2/submission_TEST.csv       v1.2 candidate, with policy_findings_TEST.csv
+    ├── v1.2/submission_TEST.csv       third submission, with policy_findings_TEST.csv and client_score_2026-11.csv
+    └── v1.3/submission_TEST.csv       v1.3 candidate, with policy_findings_TEST.csv
 ```
 
 ## Data and evaluation protocol
@@ -62,8 +66,8 @@ Graph-Based-Detection/
 | | starter (`student_bundle/`) | main (`Full Dataset/`) |
 |---|---|---|
 | vendor records | 1,002 | 21,260 |
-| labels | 33 planted cases (TRAINING 16, VALIDATION 7, TEST 10) | none; validation-period labels are to be released mid-project (Dossier §2) |
-| use | build the method, measure it, choose between variants | produce the submission |
+| labels | 33 planted cases (TRAINING 16, VALIDATION 7, TEST 10) | 43 VALIDATION cases, released 2026-11 (`validation_student_safe.csv`); TRAINING and TEST none (TEST is scored blind) |
+| use | build the method, measure it, choose between variants | produce the submission; from v1.3, develop and choose on the VALIDATION labels |
 
 Note that the main data reuses the starter's record ids for *different* records, so starter labels must never
 be scored against the main data.
@@ -82,7 +86,9 @@ be scored against the main data.
    patterns (ownership chains, shared addresses) only show over time.
 2. Run every detector on that graph and merge their findings into cases.
 3. Keep only the cases that **emerged in the period**, plus older cases that **grew in it**, meaning one of
-   their vendor entities was first onboarded in the period.
+   their vendor entities was first onboarded in the period. From v1.3 also older cases with a covering finding that
+   emerged in the period (ranked at half weight), and, behind all of them, older structures that still stand at the
+   period start (see "Layer 3 v1.3").
 4. Rank the remaining cases. That ranked list is the submission.
 
 Labels are never read by detection, case assembly or ranking. They are read only by the scorer.
@@ -461,7 +467,8 @@ The v1.1 deliverable and the client's score of it (`client_score_2026-11.csv`) a
 
 ## Layer 3 v1.2: after the client's second score
 
-Notebook: `layer3_graph_detection.ipynb` (current). Method hash: `1c7d686e5f30`. Variant: **14**, chosen on
+Notebook: `layer3_graph_detection.ipynb` at commit `1b276d6` (`git show 1b276d6:layer3_graph_detection.ipynb`). Method
+hash: `1c7d686e5f30`. Submitted as the third submission; the client's score is under "Layer 3 v1.3". Variant: **14**, chosen on
 VALIDATION as before. Case assembly and every detector of v1.1 are unchanged; v1.2 adds one detector and
 changes how tags are chosen and which cases are submitted. Each change is marked `v1.2` in the code or in
 section 0.1 of the notebook.
@@ -641,13 +648,293 @@ case 3 under one sponsor).
 
 ---
 
+## Layer 3 v1.3: the main-data validation labels
+
+Notebook: `layer3_graph_detection.ipynb` (current). Method hash: `80e0a80a439a`. Variant: **14**, chosen on the main-data
+VALIDATION labels (section 8). v1.3 is the first version developed on labelled main data. Each change is marked `v1.3`
+in the code or in section 0.1 of the notebook; section 9 of the notebook holds the validation analysis. Built
+2026-11-18, not yet submitted.
+
+### v1.3 in short: what changed and the effect
+
+The client's score of v1.2 (P@10 0.70, at least one typology with zero recall) came with 43 labelled VALIDATION cases
+of the main data. v1.3 is built on them. It changes which cases count for the period, ranks three kinds of noisy
+findings lower, adds two detectors and removes one. The last column measures each change by removing it from v1.3
+on the 43 labelled cases; the change log below gives each change's overfitting risk.
+
+| # | change | why: what the validation labels showed | effect (without → with the change) |
+|---|---|---|---|
+| 1 | **Period filter.** A case also counts for the period when a finding that covers it emerged in the period. A structure that already stood at the period start is listed after the period's own cases | 8 of the 43 cases were found by a detector but dropped as older than the period | found 25 → 33; AP 0.391 → 0.419 |
+| 2 | **Approver groups without a sponsor coupling rank low** (`approver_hub`, open-set prior 0.3) | 239 such cases in the period, none of them labelled; every labelled approver case is a sponsor–approver pair | AP 0.391 → 0.419; P@10 0.8 → 0.9 |
+| 3 | **Cross-border corridor detector** (`corridor`, GEOGRAPHY_LINKED_CONCENTRATION) | geography had the lowest recall (1 of 3); VAL-24 was found, but under the wrong tags | VAL-24 gets the right tag; tag exact 0.727 → 0.758 |
+| 4 | **Public-institution expert cluster removed** | the labels use the 14 tags only | neutral; 3 TEST cases with a tag the labels never use leave the list |
+| 5 | **Variant chosen on the main-data labels** (43 cases instead of 7 starter cases) | the main-data labels are now available | variant 14, which also has the best AP (0.419; 14+1 and 14+3 0.413) |
+| 6 | **Chance spike groups rank low** (`portfolio_spikes`): a spike group that chance explains among the sponsor's vendors (binomial chance ≥ 0.001) | 117 spike groups in the period, none labelled, five in the first 50 | AP 0.382 → 0.419; P@10 0.8 → 0.9; P@25 0.56 → 0.64 |
+| 7 | **Sponsor-burst detector** (`sponsor_burst`, RAPID_ONBOARDING_LINKED): at least 4 new vendors of one country under one sponsor within 14 days, far above the sponsor's own rate | VAL-18 was missed: the relation detectors skip sponsors with more than 30 vendors | found 32 → 33; AP 0.413 → 0.419 |
+| 8 | **Benign note on expert owners**: the owner is also engaged as an individual expert, and no sponsor engages both | 310 such findings in the period, none labelled | AP 0.417 → 0.419; starter VALIDATION 0.929 → 0.934 |
+
+The effects overlap, so they do not add up. All eight together:
+
+| | v1.2 | **v1.3** |
+|---|---|---|
+| main-data VALIDATION (43 labelled cases): **AP** | 0.308 | **0.419** |
+| P@10 / P@25 / P@50 | 0.8 / 0.44 / 0.38 | **0.9 / 0.64 / 0.40** |
+| cases found (IoU ≥ 0.5) | 24 | **33** |
+| found cases with the exact members / exactly the right tags | 0.583 / 0.625 | **0.636 / 0.758** |
+| recall of easy / medium / hard cases | 0.75 / 0.59 / 0.22 | **1.00 / 0.86** / 0.22 |
+| starter labels, AP: TRAINING / VALIDATION / TEST | 0.864 / 0.929 / 0.856 | **0.893 / 0.934 / 0.881** |
+| TEST deliverable, cases | 969 | 1,897 |
+
+- **Where it gains:** at the top of the list and in coverage. The first 25 hold 16 labelled cases instead of 11, and
+  every typology now has recall of at least 0.40 (v1.2: three typologies below it, geography 1 of 3). Over 2,000
+  bootstrap resamples the AP change is +0.113 (90% interval +0.045 to +0.195). The settings were chosen on these
+  same cases, so the interval is optimistic.
+- **Where it does not gain:** the first 50 hold one more labelled case (20 instead of 19), the hard cases stay at 2 of
+  9, and activity timing at 2 of 5. 10 cases are still missed (see Limitations).
+- **On TEST:** the first 10 share 9 cases with v1.2's list and the first 50 share 38. The list is longer because of
+  change 1: 930 of its cases enter through a covering finding or as standing structures, all of them after rank 100.
+  How v1.3 scores on TEST will be known only from the client's score.
+
+### The client's score of v1.2, and the validation labels
+
+| metric (TEST, main data) | v1.0 | v1.1 | v1.2 |
+|---|---|---|---|
+| P@10 | 0.50 | **0.80** | 0.70 |
+| P@25 | 0.48 | **0.60** | 0.56 |
+| P@50 | 0.38 | **0.48** | 0.42 |
+| mean case IoU of matched cases | 0.83 | 0.81 | 0.81 |
+| mean member recall | 0.91 | 0.90 | 0.89 |
+| exact recovery | 0.52 | 0.50 | 0.52 |
+| typology accuracy on matched cases | **0.79** | 0.74 | **0.79** |
+| typologies with zero recall | at least one | at least one | at least one: "a structural blind spot" |
+
+Source: the client's e-mail (`output/v1.2/client_score_2026-11.csv`). With it the sponsor released the labelled
+VALIDATION cases of the main data, `Full Dataset/validation_student_safe.csv`: 43 cases with their member records,
+typology tags, difficulty tier, market and emergence date. The TEST labels stay blind. The sponsor's boundaries, and
+how v1.3 keeps them:
+
+| boundary | in v1.3 |
+|---|---|
+| validation labels for development, error analysis and calibration only | read by the scorer and by notebook section 9; detection, case assembly and ranking never read them |
+| `difficulty_tier` is not a model feature | used only to stratify recall in section 9 |
+| market prevalence is not a risk signal | no rate of labelled cases by market enters the method |
+| use the emergence date for temporal validity | each case is scored on the VALIDATION run (graph as of 2025-06-30); 16 of its 199 member records were onboarded after that date and are left out of the case |
+| document the changes made after reading the labels | the change log below, and notebook section 9 |
+
+The labels use the 14 tags only (no PUBLIC_INSTITUTION_EXPERT_CLUSTER), 3 to 7 cases each; 6 cases carry several tags
+(three BRIDGE_ENTITY|LAYERED_COMPLEX_OWNERSHIP|OWNERSHIP_OPERATIONAL_OVERLAP, two with five or six tags). Tiers: 12 easy,
+22 medium, 9 hard.
+
+### What the validation labels showed
+
+All numbers in this section: the main-data VALIDATION run against the 43 labelled cases.
+
+| VALIDATION list | cases | **AP** | P@10 | P@25 | P@50 | found | mean IoU | exact | tag exact |
+|---|---|---|---|---|---|---|---|---|---|
+| v1.1 (archived main-data run) | 956 | 0.298 | 0.7 | 0.44 | 0.36 | 27 | 0.847 | 0.519 | 0.444 |
+| v1.2 (archived main-data run) | 622 | 0.308 | **0.8** | 0.44 | 0.38 | 24 | 0.877 | 0.583 | 0.625 |
+| **v1.3** | 1,457 | **0.419** | **0.9** | **0.64** | **0.40** | **33** | **0.900** | **0.636** | **0.758** |
+
+Each list is the VALIDATION period on the main data (graph as of 2025-06-30, the period's cases), scored at IoU ≥ 0.5
+against the 43 cases. Note the direction of v1.1 → v1.2: on these labels v1.2 is ahead at the top (P@10 0.7 → 0.8),
+while the client's TEST score fell (0.8 → 0.7); point 5 below.
+
+1. **The structural blind spot is the period filter, not a missing detector.** v1.2 misses 19 of the 43 cases. For 8
+   of them (VAL-01, 02, 09, 24, 31, 33, 35, 36) a detector finds the case (candidate IoU 0.75–1.0), but the case is
+   dated before the period and dropped. A case took the earliest date of everything merged into it: VAL-01's shared
+   address formed in the period (a finding dated 2024-11-22) but merged with an older relation of the same vendors
+   (2023). And some planted structures carry no date inside the period at all: VAL-24's RU vendors have shared one SG
+   correspondence address since 2017–2022, VAL-35's owners were registered in 2009, and nothing in the ownership,
+   address, engagement or payment data changes near their emergence dates.
+2. **GEOGRAPHY_LINKED_CONCENTRATION has the lowest recall**: 1 of 3 in v1.2 (0 of 3 counting the members onboarded
+   after the period), and the one found ranks 159th. It is the most likely zero-recall typology of the TEST score.
+   VAL-24, the cross-border corridor of point 1, is found as a shared address and an ownership overlap, never as
+   geography.
+3. **Approver hubs without a sponsor coupling are noise.** `approver_star` leads 239 cases in the VALIDATION period and
+   none matches a labelled case. Every labelled approver case is a coupled sponsor–approver pair (4 of 4 here, and
+   every starter case), found by `sponsor_approver_pair`.
+4. **v1.2's drop rules cost three composite cases.** VAL-40, VAL-42 and VAL-43 (3–6 tags each) were reached only by
+   open-set detectors; v1.2 leaves out such lone open-set cases. They sat at ranks 267–571 in v1.1.
+5. **The ranking change of v1.2 is not confirmed.** The client's P@k fell from v1.1 to v1.2 (one, one and three cases
+   at 10, 25 and 50). The cause is the type interleaving on the submitted primary tag (v1.2): plain common-owner and
+   approver cases move up. On the validation labels the same change is neutral to positive (P@10 0.7 → 0.8), and
+   reverting it costs AP (0.308 → 0.294). Both differences are within one to three cases; v1.3 keeps v1.2's
+   interleaving.
+
+Points 6 to 8 come from an error analysis of the list with changes 1 to 5 only (AP 0.374): what fills its first 50,
+and why the 11 cases still missed are missed.
+
+6. **Synchronised spend spikes are chance in large portfolios.** `sync_spikes` leads 117 cases in the VALIDATION
+   period and none matches a labelled case, yet five sit in the first 50. Each is three to six vendors out of 20 to 30
+   under one sponsor, which a two-month spike rate of 2.4% per vendor produces by chance. The labelled starter spike
+   groups are three of a sponsor's four vendors (chance 5·10⁻⁵).
+7. **Onboarding bursts under busy sponsors go unlinked.** VAL-18 is four CO vendors onboarded under one sponsor within
+   11 days. The relation detectors skip a sponsor with more than 30 vendors as a hub, so nothing tied the four
+   together. Counted against each sponsor's own rate, such bursts are rare: 6 in the VALIDATION period, and 4 of them
+   belong to labelled cases (VAL-05, VAL-14, VAL-18, VAL-20).
+8. **An expert who owns vendors is not, by itself, a planted case.** 310 owner findings in the VALIDATION period have
+   an owner who is also engaged as an individual expert, with no sponsor engaging both; none matches a labelled case.
+   The one labelled starter case with an expert owner (CASE-0024) is a group that the expert's own sponsor engages.
+
+Points 6 to 8 lead to changes 6 to 8. What v1.3 does not change: the first 50 hold 20 of the 43
+cases, ranks 51 to 100 hold one, and four of the next hits (VAL-05, VAL-06, VAL-18, VAL-23, ranks 94–186) are
+onboarding cases that carry the acquisition-integration benign note. Acquisition windows cover about half of the
+VALIDATION period and none of the TEST period, so the note was left as it is.
+
+### Change log: material changes made after reading the validation labels
+
+The sponsor asked that every material change made after reviewing the validation labels state the issue observed, the change, the expected improvement and the overfitting risk. Each effect below is measured on the main-data VALIDATION run by removing that one change from the final v1.3 (AP over the 43 cases; "found" = cases matched at IoU ≥ 0.5). Rows 1–5 answer the client's score of v1.2; rows 6–8 followed an error analysis of the list with rows 1–5 only (AP 0.374): its false positives in the first 50 and the cases still missed.
+
+| # | validation issue observed | change made (setting) | expected improvement | overfitting risk |
+|---|---|---|---|---|
+| 1 | 8 of the 43 cases are found by a detector (candidate IoU 0.75–1.0) but dated before the period and dropped: a case took the earliest date of everything merged into it, and some planted structures (an ownership chain, a foreign correspondence address) carry no date inside the period at all | **period filter** (`meridian.cases.in_window`): a case also belongs to the period when a typed finding that covers it (member IoU ≥ 0.5) emerged in it, ranked with weight 0.5; a case whose covering finding still holds at the period start is submitted behind the period's own cases, with weight 0.1 (`window_findings`, `window_finding_weight`, `window_standing`) | found 25 → 33; every typology's recall ≥ 0.40; AP 0.391 → 0.419. The standing cases themselves rank 254th–557th; most of the AP comes from their entering each detector's percentile distribution, which reorders the period's own cases | **medium.** The rule follows the labels' emergence dates, which the data cannot reproduce for static structures. The weights are set by rule, not tuned: standing weight 0.5 scores 0.431 on these labels but costs the starter VALIDATION period (0.934 → 0.896); finding weight 1.0 scores 0.427 but puts two older owner groups above labelled starter TEST cases (0.881 → 0.793). The cost is volume: older structures are appended to every list, most of them not cases of the period |
+| 2 | `approver_star` leads 239 cases in the VALIDATION period and none matches a labelled case; every labelled approver case is a coupled sponsor–approver pair (4 of 4 here, all starter cases) | an approver group without sponsor coupling is reported by `approver_hub` and ranks with the open-set prior 0.3 (`detector_priors`) | AP 0.391 → 0.419, P@10 0.8 → 0.9, P@25 0.60 → 0.64; starter TRAINING 0.864 → 0.893 | **low–medium.** The rule rests on every labelled approver case of both label sets; the prior is the method's existing open-set prior, not fitted |
+| 3 | GEOGRAPHY_LINKED_CONCENTRATION has the lowest recall (v1.2: 1 of 3; 0 of 3 counting members onboarded after the period). VAL-24, three RU vendors with one SG correspondence address that remit to SG, is found only as a shared address and an ownership overlap | a **cross-border corridor** detector (`corridor`): at least 3 vendor entities of one market share an address abroad that is also their remit-to country; a fitting geography tag replaces the shared-address and ownership tags it is built from (`SUBSUMES`) | VAL-24 carries the right tag: tag exact 0.727 → 0.758; geography 1 → 2 of 3 found (with the period filter) | **high per case, small in reach.** One labelled example; the rule fires on 2 groups in the whole data (RU→SG, which is VAL-24, and MA→PA, unlabelled) |
+| 4 | the labels use the 14 tags only; the v1.2 expert-cluster cases match none | `public_institution_cluster` leaves the method (variant 14+3 still runs it) | neutral on validation; 3 TEST cases that cannot carry a right tag leave the list | low |
+| 5 | the variant is now chosen on these labels | **variant choice** (notebook section 8): AP, then mean IoU, among the variants whose added typologies occur in the labels (a typology the sponsor does not label cannot be the right reason for a case); this leaves **14**, which also has the highest AP (0.419; 14+1 and 14+3 0.413) | the deliverable is chosen on 43 main-data cases instead of 7 starter cases | low: the rule uses the labels' vocabulary, not their scores |
+| 6 | `sync_spikes` leads 117 cases in the VALIDATION period and none matches a labelled case, yet five of them sit in the first 50 of the list. They are three to six vendors out of 20 to 30 under one sponsor; the labelled starter spike groups are three of a sponsor's four vendors | the chance of a spike group is judged against the sponsor's portfolio: P(Binomial(N, q) ≥ k) for k of the sponsor's N vendors, q the data's two-month spike rate. A group with chance ≥ 0.001 is reported as `portfolio_spikes` and ranks with the open-set prior 0.3 (`activity.max_p`, `detector_priors`) | AP 0.382 → 0.419, P@10 0.8 → 0.9, P@25 0.56 → 0.64; the starter periods do not change (their labelled groups have chance 5·10⁻⁵) | **low–medium.** A significance rule, not fitted: 0.001 and 0.0001 give the same lists; 0.01 keeps more of the groups (AP 0.391 against 0.411 when tested). It rests on 117 unmatched groups and two labelled starter groups; it does not find the activity-timing cases still missed |
+| 7 | VAL-18, four CO vendors onboarded under one sponsor within 11 days, is missed: the relation detectors skip a sponsor with more than 30 vendors as a hub, so nothing linked the four | a **sponsor-burst** detector (`sponsor_burst`, RAPID_ONBOARDING_LINKED): within 14 days a sponsor brings at least 4 new vendor entities of one country, with a chance below 0.001 under a Poisson rate from the sponsor's own previous two years there (`sponsor_burst` parameters) | found 32 → 33 (VAL-18, IoU 0.80); AP 0.413 → 0.419. Of the 6 bursts in the VALIDATION period, 4 belong to labelled cases (VAL-05, VAL-14, VAL-18, VAL-20); in the starter data it matches CASE-0008 to CASE-0011 (IoU 0.88–1.00) | **medium.** Designed after one missed case, but it is a generic rate test and rare: 85 bursts in the main data's whole history at the VALIDATION snapshot, 3 in the TEST period. Two of the VALIDATION bursts (VAL-05, VAL-18) carry an acquisition-integration benign note; their cases rank 94th and 102nd. It widens one starter case by a vendor (CASE-0009, IoU 1.00 → 0.88) |
+| 8 | 310 common-owner and ownership-overlap findings in the VALIDATION period have an owner who is also engaged as an individual expert, with no sponsor engaging both; none matches a labelled case | such a finding carries a benign note, "possibly the expert's own practice or consultancy" (weight 0.5). When one sponsor engages the expert and the group it stays a conflict of interest, as before (`detect_common_owner`) | AP 0.417 → 0.419; starter VALIDATION 0.929 → 0.934 | **medium.** The note on every expert owner scored higher here (AP 0.427, P@25 0.68), but the labelled starter CASE-0024 is a same-sponsor expert group (TRAINING 0.893 → 0.872); the narrower rule costs neither label set |
+
+All eight together: AP 0.308 (v1.2) → 0.419, found 24 → 33 (the table above). Adding rows 6–8 to rows 1–5: AP 0.374 → 0.419, P@10 0.8 → 0.9, P@25 0.56 → 0.64; the starter periods 0.893 / 0.929 / 0.881 → 0.893 / 0.934 / 0.881.
+
+**Tested and not adopted** (each against the same validation run):
+
+| tested | effect on validation | decision |
+|---|---|---|
+| type interleaving of v1.1 (the client's P@k fell v1.1 → v1.2) | AP 0.374 → 0.344, P@25 0.56 → 0.48 (with rows 1–5 only) | not adopted: v1.2's interleaving is better on the labels; the TEST hint is one to three cases |
+| detector hit-rate calibration from the labels (in-sample, cross-fitted, shrunk) | AP 0.28–0.34, against 0.34 with equal priors | not adopted: a detector-level rate overrides the within-detector order |
+| a case-level ranker on label-free case features, cross-validated by labelled case | AP 0.22–0.26 out of fold | not adopted: 32 positives are too few |
+| fixed lower priors for detectors with few hits (ownership overlap, layered ownership, bridge 0.3; common owner 0.7) | AP 0.346–0.365 against 0.374 (with rows 1–5 only) | not adopted |
+| domestic bridges with the open-set prior (every labelled bridge links institutions abroad) | AP 0.411 → 0.407; starter VALIDATION 0.929 → 0.908 (with fewer than 5 cross-border bridges their percentile falls to 0.5) | not adopted |
+| keep the lone open-set cases (undo v1.2's rule) | found 33 → 36 (three composite cases), AP +0.002, tag exact 0.758 → 0.694 | not adopted: the cases carry the OPEN_SET tag, a wrong reason |
+| a looser spend-spike threshold (activity timing) | VAL-28 found only at the 0.65 quantile, among 320 spike groups, with chance 0.05 | not adopted |
+| one global setting at a time (corroboration 0.75 / 1.0, finding weight 0.75, type decay 0.9, benign weight 0.6, hub prior 0.2) | AP 0.422–0.435 against 0.427 (tested with the broader expert-owner note of row 8); all but one cost a starter period (TRAINING by 0.008–0.024, VALIDATION or TEST by 0.020); the approver-hub prior 0.2 costs nothing and gains 0.004 | not adopted: the two label sets disagree, and +0.004 is within one case |
+| the acquisition-integration benign note (VAL-05, VAL-06, VAL-18 and VAL-23 carry it and rank 94th–186th) | not changed: acquisition windows cover about half of the VALIDATION period, but the TEST period has none | — |
+| within-detector percentiles against every case at the snapshot | AP 0.374 → 0.372 (with rows 1–5 only) | not adopted (kept as the option `percentile_pool`) |
+
+### v1.3 against v1.2 on the validation labels
+
+Recall by typology (a case counts for each of its tags):
+
+| typology | cases | v1.1 | v1.2 | v1.3 |
+|---|---|---|---|---|
+| ACTIVITY_TIMING_CONCENTRATION | 5 | 0.40 | 0.40 | 0.40 |
+| APPROVER_CONCENTRATION | 4 | 0.50 | 0.50 | **0.75** |
+| BRIDGE_ENTITY | 4 | 1.00 | 0.50 | 0.50 |
+| COMMON_BENEFICIAL_OWNER | 7 | 0.71 | 0.57 | **0.86** |
+| DENSE_MULTI_RELATION_CLUSTER | 7 | 0.86 | 0.71 | 0.71 |
+| GEOGRAPHY_LINKED_CONCENTRATION | 3 | 0.33 | 0.33 | **0.67** |
+| LAYERED_COMPLEX_OWNERSHIP | 4 | 0.75 | 0.25 | 0.50 |
+| OPAQUE_JURISDICTION_ROUTING | 3 | 0.67 | 0.33 | 0.67 |
+| OWNERSHIP_CHANGE_STRUCTURAL_SHIFT | 4 | 1.00 | 0.75 | 0.75 |
+| OWNERSHIP_OPERATIONAL_OVERLAP | 5 | 0.80 | 0.40 | 0.60 |
+| RAPID_ONBOARDING_LINKED | 5 | 0.80 | 0.60 | **0.80** |
+| SHARED_ADDRESS | 5 | 0.40 | 0.40 | **0.80** |
+| SPONSOR_APPROVER_COUPLING | 6 | 0.67 | 0.50 | 0.67 |
+| SPONSOR_CONCENTRATION | 3 | 1.00 | 1.00 | 1.00 |
+
+By difficulty tier (sponsor metadata, evaluation only): easy 0.75 / 0.75 / **1.00** (12 cases), medium 0.59 / 0.59 /
+**0.86** (22), hard 0.56 / 0.22 / 0.22 (9), for v1.1 / v1.2 / v1.3. The hard cases are where v1.3 gains nothing: 2 of 9
+(VAL-04, VAL-10, VAL-15, VAL-26 and the three composite cases are missed).
+
+**Uncertainty.** Over 2,000 bootstrap resamples of the 43 cases, the AP change v1.2 → v1.3 is +0.113 (90% interval
++0.045 to +0.195), positive in every resample. The settings were
+chosen on these same cases, so the interval is optimistic.
+
+**What P@k can reach.** P@k cannot exceed the number of planted cases of the period divided by k. The VALIDATION period
+has 43, so P@100 is at most 0.43 there (v1.3: 0.21). The TEST period's number is not disclosed; the client's P@50 of
+0.48 for v1.1 means at least 24, and the ratio of TEST to VALIDATION hits for v1.1 suggests about 50–60. P@50 or P@100
+near 0.9 would need about 45 or 90 TEST cases in the list's first 50 or 100.
+
+### v1.3 on the starter data
+
+The starter data checks that nothing breaks; v1.3 was not tuned on it, beyond the finding weight and the narrower
+expert-owner rule above.
+
+| period | version | submitted | **AP** | P@10 | P@25 | mean IoU | exact | tag exact | FP in top 50 |
+|---|---|---|---|---|---|---|---|---|---|
+| TRAINING | v1.2 | 74 | 0.864 | 0.9 | 0.60 | 0.984 | 0.938 | 1.000 | 34 |
+| | **v1.3** | 74 | **0.893** | 0.9 | 0.60 | 0.977 | 0.875 | 1.000 | 34 |
+| VALIDATION | v1.2 | 19 | 0.929 | 0.6 | 0.28 | 1.000 | 1.000 | 1.000 | 12 |
+| | **v1.3** | 65 | **0.934** | 0.6 | 0.28 | 1.000 | 1.000 | 1.000 | 43 |
+| TEST | v1.2 | 31 | 0.856 | 0.8 | 0.40 | 0.864 | 0.300 | 0.700 | 21 |
+| | **v1.3** | 85 | **0.881** | 0.8 | 0.40 | 0.864 | 0.300 | 0.700 | 40 |
+| all 33 at the snapshot | v1.2 | 112 | 0.924 | 1.0 | 0.96 | 0.951 | 0.758 | 0.909 | 18 |
+| | **v1.3** | 112 | **0.946** | 1.0 | 0.96 | 0.947 | 0.727 | 0.909 | 18 |
+
+All 33 labelled cases are found, with the same tags as v1.2 and the same boundaries but one: a sponsor burst
+corroborates CASE-0009 (TRAINING rank 5 → 1) and adds one vendor to it (IoU 1.00 → 0.88). The lists are longer (the
+period filter adds older structures behind the period's cases), so with fewer than 50 cases in v1.2's lists the false
+positives in the top 50 rise.
+
+### v1.3 on the main data (TEST)
+
+Variant 14 on `Full Dataset/`; the whole notebook runs in about 70 minutes.
+
+**Deliverable:** `output/v1.3/submission_TEST.csv` (1,897 TEST cases) and `output/v1.3/policy_findings_TEST.csv` (the
+same 15 findings as v1.1 and v1.2).
+
+| TEST list | cases | shared with v1.2's list (same first k, IoU ≥ 0.5) |
+|---|---|---|
+| first 10 | 10 | 9 |
+| first 25 | 25 | 22 |
+| first 50 | 50 | 38 |
+| first 100 | 100 | 77 |
+| all | 1,897 (v1.2: 969) | 966 of v1.2's 969 |
+
+(`results/graph/v1.3/full_dataset/compare_with_v1.2.csv`.)
+
+- **Why each case is in the period:** 727 emerged in it, 240 grew in it, 7 have a covering finding that emerged in it
+  (first at rank 113), and 923 are standing structures (first at rank 299, median 1,225). The first 100 hold none of the
+  last two kinds.
+- **Left the first 50:** four approver groups without sponsor coupling (v1.2 ranks 28, 35, 43, 50), two spike groups
+  (31, 38; now 107 and 114), the expert cluster (48), two common-owner cases (30, 41), a sponsor–approver pair (42), an
+  ownership change (44) and a rapid onboarding (47). **Entered:** five common-owner cases, an ownership overlap, two
+  bridges, two sponsor–approver pairs, a sponsor concentration (v1.2 ranks 53–94) and a sponsor burst (rank 39; v1.2:
+  125).
+- **Changes 6 to 8 on TEST:** with or without them the first 10 are the same cases, and 48 of the first 50. The
+  three sponsor bursts of the TEST period lead a case at rank 39 and one at 112, and corroborate the rapid onboarding
+  at rank 11. No `portfolio_spikes` case is in the first 100; three `sync_spikes` cases are.
+- **Corridors:** both are listed as standing structures with the tag GEOGRAPHY_LINKED_CONCENTRATION: MA→PA (rank 356,
+  4 entities, unlabelled) and RU→SG (rank 367; this is VAL-24, a VALIDATION case, so a false positive in TEST).
+- **Grown cases at the top:** 3 of the first 10 grew in the period (ranks 3, 5, 9). All three were in v1.1's and v1.2's
+  first 10 as well, where the client found 8 and 7 of 10, so they are likely planted cases; one more reason not to
+  down-weight grown cases.
+
+### Limitations
+
+- **Activity timing** is the weakest typology on the labels (2 of 5, both payments after termination). v1.3 stops the
+  spike groups that chance explains from crowding the top, but finds no new activity-timing case: the planted spikes
+  (2–3.5× the vendor's own median, some on vendors with a few months of history) sit below the per-vendor threshold,
+  and VAL-28's group is ordinary for its sponsor's 15 vendors (chance 0.05).
+- **10 validation cases are still missed**: 5 only partly found (boundaries: one of three addresses in another form,
+  approver groups across sponsors, a two-sponsor event cluster), 3 composite cases reached only by open-set detectors
+  (VAL-42 and VAL-43 pair a regulatory consultant with a clinical-site company that has no registry record, so the
+  ownership link is not in the data), 2 not found (VAL-22 has 2 of its 5 members by the period end; VAL-29 is a
+  single vendor with two months of payments).
+- **P@50 barely moves** (0.38 → 0.40 on the labels): v1.3 moves labelled cases up into the first 25 (11 → 16) more
+  than it brings new ones into the first 50, and ranks 51–100 hold one labelled case.
+- **43 cases is a small sample.** The bootstrap interval in section 9.3 of the notebook gives the uncertainty of the AP
+  change.
+
+### Archive
+
+`results/graph/v1.3/` has the layout of `results/graph/v1.2/`, plus in `full_dataset/`: `validation_metrics.csv` (every
+variant on the validation labels), `validation_compare.csv`, `validation_recall_by_tag.csv`,
+`validation_recall_by_difficulty.csv` and `validation_case_landing.csv` (section 9), and `compare_with_v1.2.csv`.
+
+---
+
 ## Running
 
 The Layer 3 notebook needs only the data folders and pandas, numpy, scipy, scikit-learn, networkx,
 pyarrow, pyyaml and unidecode. Run it top to bottom from the repository root.
 - Sections 1–7 use the starter data, in about 5 minutes. Results go to `results/graph/<VERSION>/`.
-- Section 8 runs the four variants on `Full Dataset/` (about 75 minutes) and writes the deliverable to
-  `output/<VERSION>/`: `submission_TEST.csv` and `policy_findings_TEST.csv`.
+- Section 8 runs the four variants on `Full Dataset/` (about 60 minutes), chooses the variant on
+  `Full Dataset/validation_student_safe.csv` when it is there, and writes the deliverable to `output/<VERSION>/`:
+  `submission_TEST.csv` and `policy_findings_TEST.csv`.
+- Section 9 analyses the main-data validation labels (about 5 minutes).
 
 **A new version:** set `VERSION` and the settings in section 0.1, mark each change with the version, run the
 notebook, and add a section to this README with its scores against the previous version. Commit the notebook so

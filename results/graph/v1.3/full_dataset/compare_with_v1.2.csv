@@ -1,0 +1,11 @@
+first k,version,cases,mean members,median members,max members,cases > 15 members,single-record cases,POLICY_VIOLATION cases,single-record POLICY_VIOLATION,OPEN_SET primary,distinct primary tags,records covered,shared with the other list (IoU >= 0.5)
+10,v1.2,10,4.1,4.0,9,0,2,0,0,0,7,41,9
+10,v1.3,10,3.5,3.5,6,0,2,0,0,0,6,35,9
+25,v1.2,25,5.9,5.0,14,0,3,0,0,0,12,139,22
+25,v1.3,25,5.4,4.0,14,0,4,0,0,0,11,129,22
+50,v1.2,50,5.9,5.0,15,0,7,0,0,1,14,281,38
+50,v1.3,50,5.9,5.0,15,0,8,0,0,1,13,284,38
+100,v1.2,100,5.7,5.0,16,1,11,0,0,3,16,531,77
+100,v1.3,100,6.1,5.0,16,2,15,0,0,4,15,579,77
+all,v1.2,969,6.2,4.0,77,48,33,0,0,17,16,3834,966
+all,v1.3,1897,4.9,3.0,77,72,248,0,0,17,15,6216,966

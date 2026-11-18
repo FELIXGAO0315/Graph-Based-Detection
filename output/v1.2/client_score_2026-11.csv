@@ -1,0 +1,11 @@
+metric,value,note
+P@10,0.70,"v1.0: 0.50, v1.1: 0.80 (sponsor's e-mail, Jimmy, 2026-11, third submission)"
+P@25,0.56,"v1.0: 0.48, v1.1: 0.60"
+P@50,0.42,"v1.0: 0.38, v1.1: 0.48"
+mean_case_iou,0.81,"v1.0: 0.83, v1.1: 0.81"
+mean_member_recall,0.89,"v1.0: 0.91, v1.1: 0.90"
+exact_recovery,0.52,"v1.0: 0.52, v1.1: 0.50"
+typology_accuracy_matched,0.79,"v1.0: 0.79, v1.1: 0.74"
+zero_recall_typologies,>=1,"""there is still at least one typology with zero recall"": not named, to keep the evaluation blind; ""a structural blind spot"""
+recall,not disclosed,
+validation_labels,released,"Full Dataset/validation_student_safe.csv: 43 VALIDATION cases (members, tags, difficulty tier, market, emergence date); difficulty_tier not a feature, market not a risk signal, document changes made after reading them"
