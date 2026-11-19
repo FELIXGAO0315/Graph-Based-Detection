@@ -13,7 +13,7 @@ relationship logic. Layer 3 is the graph model that produces the submission.
 |---|---|---|---|
 | 1 | `layer1_baseline.ipynb` | vendor-level baseline: each vendor's own records only | done, frozen in `results/layer1_frozen/` |
 | 2 | `layer2_relationship_logic.ipynb` | relationship features per typology, new candidate typologies, case queue | done, frozen in `results/layer2_frozen/` |
-| 3 | `layer3_graph_detection.ipynb` | **graph model**: heterogeneous graph, typology detectors, cases, ranking | v1.0–v1.2 submitted and scored; v2.0 is the current notebook |
+| 3 | `layer3_graph_detection.ipynb` | **graph model**: heterogeneous graph, typology detectors, cases, ranking | v1.0–v1.2 submitted and scored; v2.1 is the current notebook |
 
 **Layer 3 versions.** The notebook always holds the current version. Earlier versions are kept as a git commit
 (the code), `results/graph/<version>/` (the results) and `output/<version>/` (the deliverable).
@@ -23,7 +23,8 @@ relationship logic. Layer 3 is the graph model that produces the submission.
 | v1.0 | commit `67553b4` | first version | 0.868 / 0.940 / 0.857 | `output/v1.0/submission_TEST.csv` | submitted; client score 2026-11 |
 | v1.1 | commit `9fbf4fc` | oversized cases split, policy findings in their own list, ranking reworked | 0.864 / 0.929 / 0.869 | `output/v1.1/` | submitted; client score 2026-11 (P@10 0.80, tag accuracy 0.74) |
 | v1.2 | commit `1b276d6` | public-institution expert clusters detected, tags that fit the case, weak and duplicate cases left out | 0.864 / 0.929 / 0.856 | `output/v1.2/` | submitted; client score 2026-11 (P@10 0.70, tag accuracy 0.79) |
-| v2.0 | current notebook | developed on the main-data validation labels: period filter (covering findings, standing structures), uncoupled approver groups and chance spike groups ranked low, cross-border corridors, sponsor onboarding bursts, expert-owner benign note, expert cluster removed; main-data validation AP 0.308 → 0.419 | 0.893 / 0.934 / 0.881 | `output/v2.0/` | built 2026-11-18, not submitted |
+| v2.0 | commit `c5f6bb6` | developed on the main-data validation labels: period filter (covering findings, standing structures), uncoupled approver groups and chance spike groups ranked low, cross-border corridors, sponsor onboarding bursts, expert-owner benign note, expert cluster removed; main-data validation AP 0.308 → 0.419 | 0.893 / 0.934 / 0.881 | `output/v2.0/` | built 2026-11-18, not submitted |
+| v2.1 | current notebook | v2.0 plus one fix: a sponsor–approver pair starts no earlier than both people's roles; main-data validation AP 0.419 → 0.440 | 0.893 / 0.934 / 0.881 | `output/v2.1/` | built 2026-11-18, not submitted |
 
 ---
 
@@ -34,7 +35,7 @@ Graph-Based-Detection/
 ├── README.md
 ├── layer1_baseline.ipynb              Layer 1
 ├── layer2_relationship_logic.ipynb    Layer 2
-├── layer3_graph_detection.ipynb       Layer 3, graph model, current version v2.0 (self-contained: all method code is in the notebook)
+├── layer3_graph_detection.ipynb       Layer 3, graph model, current version v2.1 (self-contained: all method code is in the notebook)
 ├── student_bundle/                    starter data: 1,002 vendor records + 33 labelled cases (labelled_cases_TRAINING_SET)
 ├── Full Dataset/                      main data: 21,260 vendor records; validation_student_safe.csv: the 43 labelled
 │                                      VALIDATION cases (released 2026-11); TRAINING and TEST are scored blind by the sponsor
@@ -53,12 +54,14 @@ Graph-Based-Detection/
 │       ├── v1.1/                      Layer 3 v1.1, everything the notebook writes, plus ablation/ (see "Layer 3 v1.1")
 │       ├── v1.2/                      Layer 3 v1.2, everything the notebook writes (see "Layer 3 v1.2")
 │       ├── v2.0/                      Layer 3 v2.0, everything the notebook writes, incl. the validation analysis (see "Layer 3 v2.0")
+│       ├── v2.1/                      Layer 3 v2.1, the same layout (see "Layer 3 v2.1")
 │       └── *.csv, graph/, figures/    an earlier v1.0 run, superseded (see the note under "Archive")
 └── output/                            the deliverables, one folder per version, with the client's score once it is back
     ├── v1.0/submission_TEST.csv       first submission, scored 2026-11
     ├── v1.1/submission_TEST.csv       second submission, with policy_findings_TEST.csv and client_score_2026-11.csv
     ├── v1.2/submission_TEST.csv       third submission, with policy_findings_TEST.csv and client_score_2026-11.csv
-    └── v2.0/submission_TEST.csv       v2.0 candidate, with policy_findings_TEST.csv
+    ├── v2.0/submission_TEST.csv       v2.0 candidate, with policy_findings_TEST.csv
+    └── v2.1/submission_TEST.csv       v2.1 candidate, with policy_findings_TEST.csv
 ```
 
 ## Data and evaluation protocol
@@ -924,6 +927,42 @@ same 15 findings as v1.1 and v1.2).
 `results/graph/v2.0/` has the layout of `results/graph/v1.2/`, plus in `full_dataset/`: `validation_metrics.csv` (every
 variant on the validation labels), `validation_compare.csv`, `validation_recall_by_tag.csv`,
 `validation_recall_by_difficulty.csv` and `validation_case_landing.csv` (section 9), and `compare_with_v1.2.csv`.
+
+---
+
+## Layer 3 v2.1: role dates for sponsor–approver pairs
+
+Notebook: `layer3_graph_detection.ipynb` (current). Variant: **14**, chosen on the main-data VALIDATION labels as in v2.0.
+v2.1 is v2.0 with one change, marked `v2.1` in the code and in section 0.1. Four fixes from a parallel analysis of
+v1.2 on the validation labels were tested on top of v2.0, each on the main-data VALIDATION run, the starter data and
+the TEST list; one is adopted. All four are logged in section 9.4 of the notebook, in the format of the change log above.
+
+### What changed and why
+
+| # | validation issue observed | change made (setting) | expected improvement | overfitting risk |
+|---|---|---|---|---|
+| 9 | VAL-09, a coupled sponsor–approver pair, is found only as a standing structure (rank 513): the pair was dated by its 5th approval over all time, which counted approvals made before the sponsor or the approver held a role (older engagements later attributed to the pair) | a pair starts no earlier than the day both people hold a role (`employee_roles.valid_from`): its date is the later of the 5th approval and both role starts (`approval.role_dates`) | VAL-09 rank 513 → 16; AP 0.419 → 0.440, P@25 0.64 → 0.68, P@50 0.40 → 0.42; found unchanged (33); VAL-11 rank 20 → 25 | **low.** A logic correction with no threshold: an approval cannot belong to a pair before the people in it hold their roles |
+
+Starter periods: unchanged (0.893 / 0.934 / 0.881). TEST: 1,898 cases, the same as v2.0 run in the same environment, and
+the same first 50; in the first 100 one case is exchanged (a domestic bridge with no foreign link moves from 74 to 161).
+Against the archived v2.0 file (1,897 cases) v2.1 has one more case, an approver group at rank 90, and a few neighbouring
+ranks swap: these come from the environment (Python 3.14, pandas 3), not from the change. Over 2,000 bootstrap resamples
+of the 43 cases, the AP change v1.2 → v2.1 is +0.133 (90% interval +0.056 to +0.228; v2.0: +0.113).
+
+### Tested and not adopted
+
+| tested on v2.0 | effect on validation | why not adopted |
+|---|---|---|
+| a typed finding inside a case with open-set evidence only joins it as support whatever its percentile | found 33 → 34 (VAL-40, rank 69), AP 0.419 → 0.428, tag exact 0.758 → 0.735; TEST +2 cases (ranks 322, 1,744) | it recovers only the case it was built for: a six-tag composite case, matched on one of its tags through one ownership-change finding below its detector's median |
+| a bridge entity needs one foreign link (`bridge.min_foreign_links` 2 → 1) | found 33 → 35 (VAL-42 rank 85, VAL-43 rank 79), AP 0.419 → 0.435, tag exact 0.758 → 0.714; TEST +2 cases (ranks 701, 992) | the new threshold admits these two vendors and little else; each matches at exactly IoU 0.5 (the bridge vendor alone, of two members); the two TEST additions are the same two vendors as standing structures, so VALIDATION cases in the TEST list |
+| a case that holds a typed finding is dated by its typed findings only | AP 0.419 → 0.423 (VAL-01 402 → 171, VAL-02 347 → 160); found unchanged | the period filter (change 1) already admits these cases, the gain is within one case, and it lifts an approver group without sponsor coupling from TEST rank 1,782 to 56 |
+
+With the first two as well, validation AP would be 0.465 and 36 cases found, but those gains rest on the three
+cases the rules were built for.
+
+### Archive
+
+`results/graph/v2.1/` has the layout of `results/graph/v2.0/` without `full_dataset/compare_with_v1.2.csv` (written outside the notebook); section 9.1 also scores the archived v2.0 list.
 
 ---
 
